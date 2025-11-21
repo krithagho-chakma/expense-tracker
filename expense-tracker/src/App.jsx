@@ -85,8 +85,8 @@ const auth = getAuth(app);
 const db = getFirestore(app);   
 const appId = "my-expense-tracker"; 
 
-// Default Gemini Key
-const defaultGeminiKey = ""; 
+// Default Gemini Key (Fixed variable name)
+const apiKey = ""; 
 
 // --- Components ---
 
@@ -137,19 +137,19 @@ const Card = ({ children, className = "", onClick }) => (
 const CategoryBadge = ({ category, type }) => {
   if (type === 'income') {
     return (
-      <span className="text-[10px] font-bold px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
+      <span className="text-[10px] font-bold px-3 py-1.5 rounded-full bg-emerald-900/30 text-emerald-300 border border-emerald-800/50 uppercase tracking-wider">
         {category || 'Income'}
       </span>
     );
   }
   
   const colors = {
-    Food: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
-    Transport: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-    Utilities: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-    Entertainment: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
-    Shopping: 'bg-pink-500/10 text-pink-400 border-pink-500/20',
-    Health: 'bg-teal-500/10 text-teal-400 border-teal-500/20',
+    Food: 'bg-orange-900/30 text-orange-300 border-orange-800/50',
+    Transport: 'bg-blue-900/30 text-blue-300 border-blue-800/50',
+    Utilities: 'bg-yellow-900/30 text-yellow-300 border-yellow-800/50',
+    Entertainment: 'bg-purple-900/30 text-purple-300 border-purple-800/50',
+    Shopping: 'bg-pink-900/30 text-pink-300 border-pink-800/50',
+    Health: 'bg-teal-900/30 text-teal-300 border-teal-800/50',
     Other: 'bg-zinc-800 text-zinc-400 border-zinc-700',
   };
   const style = colors[category] || colors.Other;
@@ -243,34 +243,84 @@ export default function ExpenseTracker() {
 
   // --- AI Functions ---
   const callGemini = async (prompt, imageBase64 = null) => {
-    const keyToUse = geminiKey || defaultGeminiKey;
-    if (!keyToUse) throw new Error("Missing API Key");
+    // Check both user setting and environment variable
+    const keyToUse = geminiKey || apiKey;
+    if (!keyToUse) throw new Error("Please add your Gemini API Key in the Settings tab to use AI features.");
+    
     const parts = [{ text: prompt }];
     if (imageBase64) parts.push({ inlineData: { mimeType: "image/jpeg", data: imageBase64.split(',')[1] } });
+    
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${keyToUse}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts }] })
     });
+    
     const data = await response.json();
+    if (data.error) throw new Error(data.error.message);
     return data.candidates?.[0]?.content?.parts?.[0]?.text;
   };
 
-  const parseGeminiJson = (text) => JSON.parse(text.replace(/```json/g, '').replace(/```/g, '').trim());
+  // FIX: More robust JSON parsing that finds the first '{' and last '}'
+  const parseGeminiJson = (text) => {
+    try {
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      const jsonString = jsonMatch ? jsonMatch[0] : text;
+      return JSON.parse(jsonString);
+    } catch (e) {
+      console.error("JSON Parse Error:", e);
+      throw new Error("Failed to parse AI response. Please try again.");
+    }
+  };
+  
+  const parseGeminiJsonArray = (text) => {
+    try {
+      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      const jsonString = jsonMatch ? jsonMatch[0] : text;
+      return JSON.parse(jsonString);
+    } catch (e) {
+      console.error("JSON Parse Error:", e);
+      throw new Error("Failed to parse AI response. Please try again.");
+    }
+  };
 
   const handleSmartAdd = async () => {
     if (!smartInput.trim()) return;
     setIsProcessingAI(true);
     try {
-      const res = await callGemini(`Extract expense: "${smartInput}". JSON keys: item, amount (number), category (Food, Transport, Utilities, Entertainment, Shopping, Health, Other), notes, type ("expense"/"income").`);
+      // Stronger prompt for correct categorization
+      const res = await callGemini(`
+        You are a financial data extractor. Extract expense details from this text: "${smartInput}".
+        
+        Return ONLY a valid JSON object with no markdown formatting.
+        Required keys: 
+        - item (string: short description)
+        - amount (number: value only, no currency symbols)
+        - category (string: MUST be one of [Food, Transport, Utilities, Entertainment, Shopping, Health, Other])
+        - notes (string: any extra details)
+        - type (string: "expense" or "income")
+
+        Rules:
+        - If text implies earning money (Salary, Freelance, Sold item), type is "income".
+        - If text implies spending (Bought, Paid, etc.), type is "expense".
+        - Default to "expense" if unclear.
+      `);
+      
       const data = parseGeminiJson(res);
+      
       if (data.amount) setAmount(data.amount.toString());
       if (data.item) setItem(data.item);
       if (data.category) setCategory(data.category);
       if (data.notes) setNotes(data.notes);
       if (data.type) setEntryType(data.type.toLowerCase());
+      
       setShowSmartAdd(false);
       setSmartInput('');
       showNotification("✨ Magic Fill applied!");
-    } catch (err) { showNotification("AI Error", "error"); } finally { setIsProcessingAI(false); }
+    } catch (err) { 
+      console.error(err);
+      showNotification(err.message, "error"); 
+    } finally { 
+      setIsProcessingAI(false); 
+    }
   };
 
   const handleVoiceInput = () => {
@@ -312,11 +362,11 @@ export default function ExpenseTracker() {
       } else if (action === 'analyze') {
         setAnalysisResult(res);
       } else if (action === 'subscriptions') {
-        setSubscriptions(parseGeminiJson(res));
+        setSubscriptions(parseGeminiJsonArray(res));
       } else if (action === 'report') {
         setReportCard(parseGeminiJson(res));
       } else if (action === 'tax') {
-        setTaxDeductions(parseGeminiJson(res));
+        setTaxDeductions(parseGeminiJsonArray(res));
       } else if (action === 'opportunity') {
         setOpportunityResult(parseGeminiJson(res));
       } else if (action === 'advice') {
@@ -441,7 +491,7 @@ export default function ExpenseTracker() {
   const getAIBoxColor = () => {
     switch(analysisType) {
       case 'roast': return 'bg-gradient-to-r from-orange-500 to-red-600 border-orange-500/50';
-      case 'savings': return 'bg-gradient-to-r from-emerald-500 to-teal-600 border-emerald-500/50';
+      case 'savings': return 'bg-gradient-to-r from-emerald-500 to-teal-600 border-emerald-200';
       case 'forecast': return 'bg-gradient-to-r from-blue-500 to-indigo-600 border-blue-500/50';
       default: return 'bg-gradient-to-r from-purple-500 to-indigo-600 border-purple-500/50';
     }
@@ -467,10 +517,10 @@ export default function ExpenseTracker() {
 
       <main className="max-w-md mx-auto px-4 pt-6 relative z-10 space-y-8">
         
-        {/* Notification Toast */}
+        {/* Notification Toast - FIXED POSITION */}
         {notification && (
-          <div className={`fixed top-24 left-1/2 -translate-x-1/2 z-50 px-4 py-3 rounded-full shadow-2xl flex items-center gap-3 text-xs font-bold animate-in slide-in-from-top-5 fade-in duration-300 ${notification.type === 'error' ? 'bg-rose-500/20 text-rose-200 border border-rose-500/50' : 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/50'}`}>
-            {notification.type === 'error' ? <AlertCircle size={14}/> : <CheckCircle size={14}/>} {notification.msg}
+          <div className={`fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-full shadow-2xl flex items-center gap-3 text-xs font-bold animate-in slide-in-from-bottom-5 fade-in duration-300 ${notification.type === 'error' ? 'bg-red-500/90 text-white border border-red-400/50' : 'bg-emerald-500/90 text-white border border-emerald-400/50'} backdrop-blur-md w-max`}>
+            {notification.type === 'error' ? <AlertCircle size={16}/> : <CheckCircle size={16}/>} {notification.msg}
           </div>
         )}
 
@@ -529,7 +579,7 @@ export default function ExpenseTracker() {
                   <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Amount</label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl text-zinc-500">$</span>
-                    <input type="number" step="0.01" required value={amount} onChange={e => setAmount(e.target.value)} className="w-full bg-zinc-950/50 text-3xl font-black text-white pl-10 pr-4 py-4 rounded-2xl border-2 border-zinc-800 focus:border-zinc-600 outline-none transition-all placeholder-zinc-800" placeholder="0.00" />
+                    <input type="number" step="0.01" required value={amount} onChange={e => setAmount(e.target.value)} className="w-full bg-zinc-950/50 text-3xl font-black text-white pl-10 pr-4 py-4 rounded-2xl border-2 border-zinc-800 focus:border-indigo-500/50 focus:bg-zinc-900 outline-none transition-all placeholder-zinc-800" placeholder="0.00" />
                   </div>
                 </div>
 
@@ -618,25 +668,20 @@ export default function ExpenseTracker() {
               ))}
             </div>
 
-            {/* Month Survival Stats */}
-            <Card className="p-6 border-blue-500/20 bg-gradient-to-br from-zinc-900 to-blue-900/20 relative overflow-hidden">
-               <div className="absolute -right-6 -top-6 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl"></div>
-              <h2 className="font-bold text-lg mb-6 flex items-center gap-2 text-blue-200 relative z-10"><Calendar size={18}/> Month Survival</h2>
-              <div className="grid grid-cols-2 gap-6 relative z-10">
+            {/* Month Survival Stats (RESTORED OLD LAYOUT) */}
+            <Card className="p-6 border-blue-900/30 bg-gradient-to-br from-zinc-900 to-blue-900/10">
+              <div className="flex justify-between items-start mb-4">
                 <div>
-                  <div className="flex items-center gap-2 mb-2 text-zinc-400 text-[10px] font-bold uppercase tracking-wider"><Clock size={12} /> Total Days</div>
-                  <div className="flex items-baseline gap-1"><span className="text-3xl font-bold text-white">{monthStats.daysLeft}</span><span className="text-xs text-zinc-500 font-medium">/ {monthStats.daysInMonth} left</span></div>
-                  <div className="w-full bg-zinc-800/50 h-1.5 rounded-full mt-3 overflow-hidden"><div className="bg-blue-500 h-full rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]" style={{ width: `${(monthStats.daysLeft / monthStats.daysInMonth) * 100}%` }}></div></div>
+                  <h2 className="font-bold text-blue-200 text-lg flex items-center gap-2"><Calendar size={18}/> Survival Mode</h2>
+                  <p className="text-xs text-blue-400/60 mt-1">{monthStats.daysLeft} days ({monthStats.workingDaysLeft} working) left</p>
                 </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-2 text-zinc-400 text-[10px] font-bold uppercase tracking-wider"><Briefcase size={12} /> Working Days</div>
-                  <div className="flex items-baseline gap-1"><span className="text-3xl font-bold text-emerald-400">{monthStats.workingDaysLeft}</span><span className="text-xs text-zinc-500 font-medium">/ {monthStats.totalWorkingDays} left</span></div>
-                  <div className="w-full bg-zinc-800/50 h-1.5 rounded-full mt-3 overflow-hidden"><div className="bg-emerald-500 h-full rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]" style={{ width: `${(monthStats.workingDaysLeft / monthStats.totalWorkingDays) * 100}%` }}></div></div>
+                <div className="text-right">
+                  <p className="text-[10px] text-zinc-500 uppercase tracking-widest">Daily Budget</p>
+                  <p className="text-2xl font-bold text-white">${(balance / Math.max(1, monthStats.daysLeft)).toFixed(0)}</p>
                 </div>
               </div>
-              <div className="mt-6 pt-4 border-t border-white/5 text-center">
-                 <p className="text-xs text-zinc-400">Daily budget for remaining days</p>
-                 <p className="text-xl font-black text-white mt-1">${(balance / Math.max(1, monthStats.daysLeft)).toFixed(0)}</p>
+              <div className="w-full bg-zinc-800 h-2 rounded-full overflow-hidden">
+                <div className="bg-blue-500 h-full rounded-full" style={{ width: `${((monthStats.daysInMonth - monthStats.daysLeft) / monthStats.daysInMonth) * 100}%` }}></div>
               </div>
             </Card>
 
@@ -773,8 +818,8 @@ export default function ExpenseTracker() {
                   
                   <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                     {reportCard && (
-                      <div className="text-center py-4">
-                        <div className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 mb-2">{reportCard.grade}</div>
+                      <div className="text-center">
+                        <div className="text-6xl font-black text-indigo-400 mb-2">{reportCard.grade}</div>
                         <div className="text-sm text-zinc-400 italic px-4">"{reportCard.comment}"</div>
                       </div>
                     )}
