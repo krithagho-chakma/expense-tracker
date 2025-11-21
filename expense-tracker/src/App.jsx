@@ -61,8 +61,7 @@ import {
   Gift,
   Bot,
   GraduationCap,
-  FileText,
-  ChevronRight
+  FileText
 } from 'lucide-react';
 
 // ==========================================
@@ -85,35 +84,37 @@ const auth = getAuth(app);
 const db = getFirestore(app);   
 const appId = "my-expense-tracker"; 
 
-// Default Gemini Key (Fixed variable name)
-const apiKey = ""; 
+// Default Gemini Key
+const defaultGeminiKey = ""; 
 
 // --- Components ---
 
 const SetupGuide = () => (
-  <div className="space-y-4 text-sm text-zinc-400 animate-in fade-in duration-500">
-    <div className="bg-zinc-900/50 p-5 rounded-3xl border border-zinc-800">
-      <h3 className="font-bold text-purple-300 flex items-center gap-2">
-        <Sparkles size={18} /> Gemini AI Features
+  <div className="space-y-4 text-sm text-slate-600 animate-in fade-in duration-500">
+    <div className="bg-purple-50 p-4 rounded-xl border border-purple-100">
+      <h3 className="font-bold text-purple-800 flex items-center gap-2">
+        <Sparkles size={16} /> Gemini AI Features
       </h3>
-      <p className="mt-2 text-zinc-400">This app uses AI to simplify your finances:</p>
-      <ul className="list-disc list-inside mt-2 ml-1 space-y-1 text-zinc-500">
-        <li><strong>Magic Fill:</strong> Auto-fill forms from text.</li>
-        <li><strong>Receipt Scan:</strong> Data from photos.</li>
-        <li><strong>Advisor:</strong> Spending advice & forecasts.</li>
+      <p className="mt-2">This app uses Gemini to:</p>
+      <ul className="list-disc list-inside mt-1 ml-1 space-y-1 text-purple-700/80">
+        <li><strong>Magic Fill:</strong> Type/Speak to fill forms.</li>
+        <li><strong>Receipt Scan:</strong> Extract data from photos.</li>
+        <li><strong>Purchase Advisor:</strong> Ask AI if you can afford items.</li>
+        <li><strong>Tax Scout:</strong> Find potential tax deductions.</li>
       </ul>
     </div>
-    <div className="bg-zinc-900/50 p-5 rounded-3xl border border-zinc-800">
-      <h3 className="font-bold text-blue-300 flex items-center gap-2">
-        <Sheet size={18} /> Google Sheets Sync
+    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+      <h3 className="font-bold text-blue-800 flex items-center gap-2">
+        <Sheet size={16} /> Google Sheets Setup
       </h3>
-      <ol className="list-decimal list-inside mt-2 space-y-1 ml-1 text-zinc-500">
-        <li>Create Sheet {'>'} Extensions {'>'} Apps Script.</li>
-        <li>Paste code below {'>'} Deploy as Web App.</li>
-        <li>Access: <strong>Anyone</strong> {'>'} Copy URL below.</li>
+      <ol className="list-decimal list-inside mt-2 space-y-1 ml-1 text-blue-700/80">
+        <li>Create a Google Sheet. Go to Extensions {'>'} Apps Script.</li>
+        <li>Paste the code below. Click Deploy {'>'} Web App.</li>
+        <li>Set "Who has access" to <strong>Anyone</strong>.</li>
+        <li>Copy the URL and paste it below.</li>
       </ol>
     </div>
-    <div className="bg-black/40 text-zinc-400 p-4 rounded-3xl font-mono text-[10px] overflow-x-auto border border-zinc-800">
+    <div className="bg-slate-800 text-slate-200 p-4 rounded-xl font-mono text-xs overflow-x-auto shadow-inner">
       <pre>{`function doPost(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var data = JSON.parse(e.postData.contents);
@@ -128,7 +129,7 @@ const SetupGuide = () => (
 const Card = ({ children, className = "", onClick }) => (
   <div 
     onClick={onClick}
-    className={`bg-zinc-900 rounded-[28px] p-5 shadow-sm border border-zinc-800/50 transition-all duration-300 hover:bg-zinc-800/80 ${className}`}
+    className={`bg-white rounded-2xl shadow-sm border border-slate-100 transition-all duration-300 hover:shadow-md ${className}`}
   >
     {children}
   </div>
@@ -137,24 +138,24 @@ const Card = ({ children, className = "", onClick }) => (
 const CategoryBadge = ({ category, type }) => {
   if (type === 'income') {
     return (
-      <span className="text-[10px] font-bold px-3 py-1.5 rounded-full bg-emerald-900/30 text-emerald-300 border border-emerald-800/50 uppercase tracking-wider">
+      <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-green-50 text-green-600 border border-green-100 uppercase tracking-wide">
         {category || 'Income'}
       </span>
     );
   }
   
   const colors = {
-    Food: 'bg-orange-900/30 text-orange-300 border-orange-800/50',
-    Transport: 'bg-blue-900/30 text-blue-300 border-blue-800/50',
-    Utilities: 'bg-yellow-900/30 text-yellow-300 border-yellow-800/50',
-    Entertainment: 'bg-purple-900/30 text-purple-300 border-purple-800/50',
-    Shopping: 'bg-pink-900/30 text-pink-300 border-pink-800/50',
-    Health: 'bg-teal-900/30 text-teal-300 border-teal-800/50',
-    Other: 'bg-zinc-800 text-zinc-400 border-zinc-700',
+    Food: 'bg-orange-50 text-orange-600 border-orange-100',
+    Transport: 'bg-blue-50 text-blue-600 border-blue-100',
+    Utilities: 'bg-yellow-50 text-yellow-600 border-yellow-100',
+    Entertainment: 'bg-purple-50 text-purple-600 border-purple-100',
+    Shopping: 'bg-pink-50 text-pink-600 border-pink-100',
+    Health: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+    Other: 'bg-slate-50 text-slate-600 border-slate-100',
   };
   const style = colors[category] || colors.Other;
   return (
-    <span className={`text-[10px] font-bold px-3 py-1.5 rounded-full border uppercase tracking-wider ${style}`}>
+    <span className={`text-[10px] font-bold px-2 py-1 rounded-full border uppercase tracking-wide ${style}`}>
       {category}
     </span>
   );
@@ -169,7 +170,7 @@ export default function ExpenseTracker() {
   const [geminiKey, setGeminiKey] = useState('');
   
   // Form State
-  const [entryType, setEntryType] = useState('expense'); 
+  const [entryType, setEntryType] = useState('expense'); // 'expense' or 'income'
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('Food');
   const [item, setItem] = useState('');
@@ -186,7 +187,7 @@ export default function ExpenseTracker() {
   const [analysisType, setAnalysisType] = useState('helpful');
   const [isListening, setIsListening] = useState(false);
   
-  // AI Feature States
+  // New AI Feature States
   const [advisorInput, setAdvisorInput] = useState('');
   const [advisorResult, setAdvisorResult] = useState(null);
   const [personaResult, setPersonaResult] = useState(null);
@@ -197,13 +198,13 @@ export default function ExpenseTracker() {
 
   // Chat State
   const [chatMessages, setChatMessages] = useState([
-    { role: 'ai', text: "Hey! I'm your finance buddy. Ask me anything about your spending!" }
+    { role: 'ai', text: "Hi! I'm your financial assistant. Ask me things like 'How much did I spend on food?'" }
   ]);
   const [chatInput, setChatInput] = useState('');
   const [isChatLoading, setIsChatLoading] = useState(false);
   const chatEndRef = useRef(null);
 
-  // Visualization
+  // Visualization & Search State
   const [chartPeriod, setChartPeriod] = useState(7); 
   const [focusedBar, setFocusedBar] = useState(null);
   const [focusedCategory, setFocusedCategory] = useState(null);
@@ -212,14 +213,27 @@ export default function ExpenseTracker() {
   // --- Auth & Data Loading ---
   useEffect(() => {
     const initAuth = async () => {
-      try { await signInAnonymously(auth); } catch (err) { console.error(err); }
+      try {
+        await signInAnonymously(auth);
+      } catch (err) {
+        console.error("Auth failed", err);
+      }
     };
     initAuth();
-    return onAuthStateChanged(auth, (u) => { setUser(u); setLoading(false); });
+
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
+    return () => unsubscribe();
   }, []);
 
+  // Load Settings, Expenses
   useEffect(() => {
     if (!user) return;
+
+    const getPath = (col) => collection(db, 'artifacts', appId, 'users', user.uid, col);
+    
     const settingsRef = doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'config');
     getDoc(settingsRef).then(snap => {
       if (snap.exists()) {
@@ -227,108 +241,107 @@ export default function ExpenseTracker() {
         setScriptUrl(data.scriptUrl || '');
         setGeminiKey(data.geminiKey || '');
         if (data.persona) setPersonaResult(data.persona);
+        if (data.subscriptions) setSubscriptions(data.subscriptions);
       }
     });
-    const q = collection(db, 'artifacts', appId, 'users', user.uid, 'expenses');
-    return onSnapshot(q, (snapshot) => {
+
+    const unsubscribeExpenses = onSnapshot(getPath('expenses'), (snapshot) => {
       const loaded = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       loaded.sort((a, b) => new Date(b.date) - new Date(a.date));
       setExpenses(loaded);
     });
+
+    return () => unsubscribeExpenses();
   }, [user]);
 
+  // Auto-scroll chat
   useEffect(() => {
-    if (activeTab === 'chat') chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (activeTab === 'chat') {
+      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [chatMessages, activeTab]);
 
+  // --- Filtered Data ---
+  const filteredExpenses = useMemo(() => {
+    if (!searchDate) return expenses;
+    return expenses.filter(e => e.date === searchDate);
+  }, [expenses, searchDate]);
+
   // --- AI Functions ---
+
   const callGemini = async (prompt, imageBase64 = null) => {
-    // Check both user setting and environment variable
-    const keyToUse = geminiKey || apiKey;
-    if (!keyToUse) throw new Error("Please add your Gemini API Key in the Settings tab to use AI features.");
-    
+    const keyToUse = geminiKey || defaultGeminiKey;
+    if (!keyToUse) throw new Error("Please add a Gemini API Key in Settings.");
+
     const parts = [{ text: prompt }];
-    if (imageBase64) parts.push({ inlineData: { mimeType: "image/jpeg", data: imageBase64.split(',')[1] } });
     
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${keyToUse}`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts }] })
-    });
-    
+    if (imageBase64) {
+      const base64Data = imageBase64.split(',')[1];
+      parts.push({
+        inlineData: {
+          mimeType: "image/jpeg",
+          data: base64Data
+        }
+      });
+    }
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${keyToUse}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts }] })
+      }
+    );
+
     const data = await response.json();
     if (data.error) throw new Error(data.error.message);
     return data.candidates?.[0]?.content?.parts?.[0]?.text;
   };
 
-  // FIX: More robust JSON parsing that finds the first '{' and last '}'
   const parseGeminiJson = (text) => {
-    try {
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      const jsonString = jsonMatch ? jsonMatch[0] : text;
-      return JSON.parse(jsonString);
-    } catch (e) {
-      console.error("JSON Parse Error:", e);
-      throw new Error("Failed to parse AI response. Please try again.");
-    }
-  };
-  
-  const parseGeminiJsonArray = (text) => {
-    try {
-      const jsonMatch = text.match(/\[[\s\S]*\]/);
-      const jsonString = jsonMatch ? jsonMatch[0] : text;
-      return JSON.parse(jsonString);
-    } catch (e) {
-      console.error("JSON Parse Error:", e);
-      throw new Error("Failed to parse AI response. Please try again.");
-    }
+    const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    return JSON.parse(cleanJson);
   };
 
   const handleSmartAdd = async () => {
     if (!smartInput.trim()) return;
     setIsProcessingAI(true);
     try {
-      // Stronger prompt for correct categorization
-      const res = await callGemini(`
-        You are a financial data extractor. Extract expense details from this text: "${smartInput}".
-        
-        Return ONLY a valid JSON object with no markdown formatting.
-        Required keys: 
-        - item (string: short description)
-        - amount (number: value only, no currency symbols)
-        - category (string: MUST be one of [Food, Transport, Utilities, Entertainment, Shopping, Health, Other])
-        - notes (string: any extra details)
-        - type (string: "expense" or "income")
-
-        Rules:
-        - If text implies earning money (Salary, Freelance, Sold item), type is "income".
-        - If text implies spending (Bought, Paid, etc.), type is "expense".
-        - Default to "expense" if unclear.
-      `);
-      
-      const data = parseGeminiJson(res);
-      
+      const prompt = `Extract expense details from this text: "${smartInput}". Return ONLY a valid JSON object with keys: item (string), amount (number), category (string: Food, Transport, Utilities, Entertainment, Shopping, Health, Other), notes (string), type (string: "expense" or "income"). If it looks like income (salary, sold something), set type to income.`;
+      const resultText = await callGemini(prompt);
+      const data = parseGeminiJson(resultText);
       if (data.amount) setAmount(data.amount.toString());
       if (data.item) setItem(data.item);
       if (data.category) setCategory(data.category);
       if (data.notes) setNotes(data.notes);
       if (data.type) setEntryType(data.type.toLowerCase());
-      
       setShowSmartAdd(false);
       setSmartInput('');
-      showNotification("✨ Magic Fill applied!");
-    } catch (err) { 
-      console.error(err);
-      showNotification(err.message, "error"); 
-    } finally { 
-      setIsProcessingAI(false); 
+      showNotification("✨ Magic Fill successful!");
+    } catch (err) {
+      showNotification("AI Parsing failed: " + err.message, "error");
+    } finally {
+      setIsProcessingAI(false);
     }
   };
 
   const handleVoiceInput = () => {
-    if (!('webkitSpeechRecognition' in window)) return alert("Voice not supported");
+    if (!('webkitSpeechRecognition' in window)) {
+      alert("Voice recognition is not supported in this browser.");
+      return;
+    }
     const recognition = new window.webkitSpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
     recognition.onstart = () => setIsListening(true);
     recognition.onend = () => setIsListening(false);
-    recognition.onresult = (e) => setSmartInput(e.results[0][0].transcript);
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setSmartInput(transcript);
+    };
     recognition.start();
   };
 
@@ -336,43 +349,142 @@ export default function ExpenseTracker() {
     const file = e.target.files[0];
     if (!file) return;
     setIsProcessingAI(true);
+    showNotification("📸 Scanning receipt...", "loading");
     const reader = new FileReader();
     reader.onloadend = async () => {
       try {
-        const res = await callGemini(`Extract from receipt: Total Amount, Vendor/Item, Date (YYYY-MM-DD), Category. Return JSON.`, reader.result);
-        const data = parseGeminiJson(res);
-        setAmount(data.amount?.toString()); setItem(data.item); setCategory(data.category); if(data.date) setDate(data.date); setEntryType('expense');
-        setShowSmartAdd(false); showNotification("Receipt scanned!");
-      } catch (err) { showNotification("Scan failed", "error"); } finally { setIsProcessingAI(false); }
+        const prompt = `Extract from receipt: Total Amount (number), Main Vendor/Item (string), Date (YYYY-MM-DD), Category (Food, Transport, Utilities, Entertainment, Shopping, Health, Other). Return ONLY JSON.`;
+        const text = await callGemini(prompt, reader.result);
+        const data = parseGeminiJson(text);
+        if (data.amount) setAmount(data.amount.toString());
+        if (data.item) setItem(data.item); 
+        if (data.category) setCategory(data.category);
+        if (data.date) setDate(data.date);
+        setEntryType('expense');
+        setShowSmartAdd(false);
+        showNotification("✨ Receipt scanned!");
+      } catch (err) {
+        showNotification("Scan failed: " + err.message, "error");
+      } finally {
+        setIsProcessingAI(false);
+      }
     };
     reader.readAsDataURL(file);
   };
 
-  // --- AI Handlers ---
-  const handleAIAction = async (action, promptSuffix = "") => {
+  const handleFindSubscriptions = async () => {
     setIsProcessingAI(true);
-    const list = expenses.filter(e => e.type !== 'income');
-    const recent = list.slice(0, 50).map(e => `${e.date}: $${e.amount} (${e.item})`).join('\n');
+    const expenseList = expenses.filter(e => e.type !== 'income');
+    const recent = expenseList.slice(0, 100).map(e => `${e.date}: $${e.amount} at ${e.item}`).join('\n');
+    const prompt = `
+      Analyze these expenses and identify potential recurring subscriptions or bills (e.g., Netflix, Spotify, Gym, Internet, Rent).
+      Return JSON: [{ "name": "Service Name", "amount": 10, "frequency": "Monthly/Yearly" }]
+      If none found, return empty array.
+      Expenses:
+      ${recent}
+    `;
     try {
-      const res = await callGemini(`${promptSuffix} Data: ${recent}`);
-      if (action === 'persona') {
-        const json = parseGeminiJson(res);
-        setPersonaResult(json);
-        if(user) setDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'config'), { persona: json }, { merge: true });
-      } else if (action === 'analyze') {
-        setAnalysisResult(res);
-      } else if (action === 'subscriptions') {
-        setSubscriptions(parseGeminiJsonArray(res));
-      } else if (action === 'report') {
-        setReportCard(parseGeminiJson(res));
-      } else if (action === 'tax') {
-        setTaxDeductions(parseGeminiJsonArray(res));
-      } else if (action === 'opportunity') {
-        setOpportunityResult(parseGeminiJson(res));
-      } else if (action === 'advice') {
-        setAdvisorResult(parseGeminiJson(res));
+      const text = await callGemini(prompt);
+      const res = parseGeminiJson(text);
+      setSubscriptions(res);
+      if (user) {
+        await setDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'config'), { subscriptions: res }, { merge: true });
       }
-    } catch (e) { showNotification("AI Error", "error"); } finally { setIsProcessingAI(false); }
+    } catch (err) {
+      showNotification("Scan failed", "error");
+    } finally {
+      setIsProcessingAI(false);
+    }
+  };
+
+  const handleOpportunityCost = async () => {
+    setIsProcessingAI(true);
+    const totals = {};
+    expenses.filter(e => e.type !== 'income').forEach(e => { totals[e.category] = (totals[e.category] || 0) + Number(e.amount); });
+    const topCat = Object.keys(totals).reduce((a, b) => totals[a] > totals[b] ? a : b, 'Food');
+    const amount = totals[topCat] || 0;
+
+    const prompt = `
+      I spend $${amount} on ${topCat} recently. 
+      If I cut this spending by 50% for a year, what cool/fun thing could I buy instead? 
+      Be creative and motivating.
+      Return JSON: { "item": "A round-trip ticket to Tokyo", "price": "$1200", "message": "Imagine the sushi!" }
+    `;
+
+    try {
+      const text = await callGemini(prompt);
+      const res = parseGeminiJson(text);
+      setOpportunityResult(res);
+    } catch (err) {
+      showNotification("Calc failed", "error");
+    } finally {
+      setIsProcessingAI(false);
+    }
+  };
+
+  const handleGeneratePersona = async () => {
+    setIsProcessingAI(true);
+    const expenseList = expenses.filter(e => e.type !== 'income');
+    const recent = expenseList.slice(0, 50).map(e => `${e.date}: $${e.amount} on ${e.category}`).join('\n');
+    const prompt = `Based on these expenses, assign me a funny "RPG Character Class". Examples: "Level 5 Coffee Mage", "Paladin of Thrift". Return JSON: { "class": "Title", "desc": "Why this class fits me" } Expenses: ${recent}`;
+    try {
+      const text = await callGemini(prompt);
+      const res = parseGeminiJson(text);
+      setPersonaResult(res);
+      if (user) {
+        await setDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'config'), { persona: res }, { merge: true });
+      }
+    } catch (err) {
+      showNotification("Persona failed", "error");
+    } finally {
+      setIsProcessingAI(false);
+    }
+  };
+
+  const handleReportCard = async () => {
+    setIsProcessingAI(true);
+    const expenseList = expenses.filter(e => e.type !== 'income');
+    const incomeList = expenses.filter(e => e.type === 'income');
+    const totalExp = expenseList.reduce((acc, curr) => acc + Number(curr.amount), 0);
+    const totalInc = incomeList.reduce((acc, curr) => acc + Number(curr.amount), 0);
+    const recent = expenseList.slice(0, 40).map(e => `$${e.amount} on ${e.category}`).join(', ');
+
+    const prompt = `
+      Act as a financial teacher. Grade my financial habits (A+ to F) based on:
+      Income: $${totalInc}, Expenses: $${totalExp}.
+      Spending habits: ${recent}.
+      Return JSON: { "grade": "B+", "score": 85, "comment": "A 2-sentence teacher's comment on how to improve." }
+    `;
+
+    try {
+      const text = await callGemini(prompt);
+      setReportCard(parseGeminiJson(text));
+    } catch (err) {
+      showNotification("Grading failed", "error");
+    } finally {
+      setIsProcessingAI(false);
+    }
+  };
+
+  const handleTaxScout = async () => {
+    setIsProcessingAI(true);
+    const expenseList = expenses.filter(e => e.type !== 'income');
+    const recent = expenseList.map(e => `${e.date}: ${e.item} ($${e.amount})`).join('\n');
+    const prompt = `
+      Identify potential tax-deductible expenses for a freelancer from this list.
+      Return JSON: [{ "item": "Office Chair", "amount": 150, "reason": "Home Office" }]
+      If none, return empty array.
+      List:
+      ${recent}
+    `;
+    try {
+      const text = await callGemini(prompt);
+      setTaxDeductions(parseGeminiJson(text));
+    } catch (err) {
+      showNotification("Scout failed", "error");
+    } finally {
+      setIsProcessingAI(false);
+    }
   };
 
   const handleAnalyze = async (type = 'helpful') => {
@@ -398,14 +510,20 @@ export default function ExpenseTracker() {
 
   const handleChat = async () => {
     if (!chatInput.trim()) return;
-    const msg = chatInput; setChatInput('');
-    setChatMessages(prev => [...prev, { role: 'user', text: msg }]);
+    const userMsg = chatInput;
+    setChatInput('');
+    setChatMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setIsChatLoading(true);
-    const context = expenses.map(e => `${e.date}: ${e.type==='income'?'+':'-'}$${e.amount} (${e.item})`).join('\n');
+    const context = expenses.map(e => `${e.date}: ${e.type === 'income' ? '+' : '-'}$${e.amount} (${e.item})`).join('\n');
+    const prompt = `You are a financial assistant. Use this transaction data to answer the user's question. Data:\n${context}\n\nUser Question: "${userMsg}"\nAnswer briefly and friendly.`;
     try {
-      const res = await callGemini(`You are a chill finance buddy. Answer brief & friendly. Data:\n${context}\n\nQ: "${msg}"`);
-      setChatMessages(prev => [...prev, { role: 'ai', text: res }]);
-    } catch (e) { setChatMessages(prev => [...prev, { role: 'ai', text: "Brain freeze... try again?" }]); } finally { setIsChatLoading(false); }
+      const response = await callGemini(prompt);
+      setChatMessages(prev => [...prev, { role: 'ai', text: response }]);
+    } catch (e) {
+      setChatMessages(prev => [...prev, { role: 'ai', text: "Sorry, I couldn't process that request." }]);
+    } finally {
+      setIsChatLoading(false);
+    }
   };
 
   const handlePurchaseAdvice = async () => {
@@ -429,491 +547,738 @@ export default function ExpenseTracker() {
     }
   };
 
-  // --- Data Management ---
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    try {
-      await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'expenses'), {
-        type: entryType, date, category: entryType === 'income' ? 'Income' : category, item, amount: parseFloat(amount), notes, createdAt: serverTimestamp()
-      });
-      if (scriptUrl) await fetch(scriptUrl, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ date, type: entryType, category, item, amount, notes }) });
-      setAmount(''); setItem(''); setNotes(''); showNotification("Saved!");
-    } catch (e) { showNotification("Error", "error"); } finally { setIsSubmitting(false); }
+  // --- Actions ---
+
+  const showNotification = (msg, type = 'success') => {
+    setNotification({ msg, type });
+    setTimeout(() => setNotification(null), 3000);
   };
 
-  const showNotification = (msg, type = 'success') => { setNotification({ msg, type }); setTimeout(() => setNotification(null), 3000); };
-  const handleDelete = async (id) => { if(confirm("Delete?")) deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'expenses', id)); };
-  const handleSaveSettings = async () => { if(user) setDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'config'), { scriptUrl, geminiKey }, { merge: true }); showNotification("Settings Saved"); };
+  const handleSaveSettings = async () => {
+    if (!user) return;
+    try {
+      await setDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'config'), {
+        scriptUrl: scriptUrl.trim(),
+        geminiKey: geminiKey.trim()
+      }, { merge: true });
+      showNotification("Settings saved successfully");
+    } catch (e) {
+      showNotification("Failed to save settings", "error");
+    }
+  };
 
-  // --- Logic & Visuals ---
-  const totalIncome = useMemo(() => expenses.filter(e => e.type === 'income').reduce((a, c) => a + (Number(c.amount)||0), 0), [expenses]);
-  const totalExpenses = useMemo(() => expenses.filter(e => e.type !== 'income').reduce((a, c) => a + (Number(c.amount)||0), 0), [expenses]);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!amount || !item) return;
+    setIsSubmitting(true);
+    const expenseData = { 
+      type: entryType, 
+      date, 
+      category: entryType === 'income' ? 'Income' : category, 
+      item, 
+      amount: parseFloat(amount), 
+      notes, 
+      createdAt: serverTimestamp() 
+    };
+    try {
+      await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'expenses'), expenseData);
+      if (scriptUrl) {
+        await fetch(scriptUrl, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(expenseData) });
+      }
+      setAmount(''); setItem(''); setNotes('');
+      showNotification("Transaction Saved!");
+    } catch (error) {
+      showNotification("Error saving", "error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm("Delete this record?")) return;
+    try { await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'expenses', id)); } catch (e) { console.error(e); }
+  };
+
+  // --- Calculations ---
+  const totalIncome = useMemo(() => expenses.filter(e => e.type === 'income').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0), [expenses]);
+  const totalExpenses = useMemo(() => expenses.filter(e => e.type !== 'income').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0), [expenses]);
   const balance = totalIncome - totalExpenses;
   
-  const filteredExpenses = useMemo(() => searchDate ? expenses.filter(e => e.date === searchDate) : expenses, [expenses, searchDate]);
-  
+  // --- Stats Logic ---
   const monthStats = useMemo(() => {
     const now = new Date();
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    const daysLeft = daysInMonth - now.getDate();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const today = now.getDate();
+    const totalDays = new Date(year, month + 1, 0).getDate();
+    const daysRemaining = totalDays - today;
+    let totalWorkingDays = 0;
     let workingDaysLeft = 0;
-    for (let i = now.getDate() + 1; i <= daysInMonth; i++) {
-      const day = new Date(now.getFullYear(), now.getMonth(), i).getDay();
-      if (day !== 5 && day !== 6) workingDaysLeft++;
+    for (let i = 1; i <= totalDays; i++) {
+      const d = new Date(year, month, i);
+      const day = d.getDay();
+      if (day !== 5 && day !== 6) { 
+        totalWorkingDays++;
+        if (i > today) workingDaysLeft++;
+      }
     }
-    return { daysLeft, workingDaysLeft, daysInMonth };
+    return { totalDays, daysRemaining, totalWorkingDays, workingDaysLeft };
   }, []);
 
+  // --- Chart Logic (Expenses Only) ---
   const chartData = useMemo(() => {
-    const days = Array.from({length: chartPeriod}, (_, i) => {
-      const d = new Date(); d.setDate(d.getDate() - (chartPeriod - 1 - i));
-      return { date: d.toISOString().split('T')[0], day: d.toLocaleDateString('en-US', { weekday: 'narrow' }), amount: 0 };
-    });
+    const days = [];
+    for (let i = chartPeriod - 1; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short' });
+      const fullLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      days.push({ date: dateStr, day: dayLabel, fullDate: fullLabel, amount: 0, items: [] });
+    }
     expenses.filter(e => e.type !== 'income').forEach(e => {
-      const d = days.find(day => day.date === e.date);
-      if (d) d.amount += parseFloat(e.amount);
+      const day = days.find(d => d.date === e.date);
+      if (day) {
+        const amt = parseFloat(e.amount) || 0;
+        day.amount += amt;
+        day.items.push({ item: e.item, amount: amt });
+      }
     });
-    const max = Math.max(...days.map(d => d.amount), 1);
-    return days.map(d => ({ ...d, percent: (d.amount / max) * 100 }));
+    const max = Math.max(...days.map(d => d.amount), 1); 
+    return { 
+      data: days.map(d => ({ ...d, height: (d.amount / max) * 100, percent: (d.amount / max) * 100 })),
+      total: days.reduce((acc, curr) => acc + curr.amount, 0),
+      max
+    };
   }, [expenses, chartPeriod]);
 
-  const categoryData = useMemo(() => {
-    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - chartPeriod);
+  const categoryBreakdown = useMemo(() => {
     const totals = {};
-    expenses.filter(e => e.type !== 'income' && new Date(e.date) >= cutoff).forEach(e => totals[e.category] = (totals[e.category] || 0) + parseFloat(e.amount));
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - chartPeriod);
+    const cutoffStr = cutoffDate.toISOString().split('T')[0];
+    expenses.filter(e => e.type !== 'income' && e.date >= cutoffStr).forEach(e => { 
+      totals[e.category] = (totals[e.category] || 0) + (parseFloat(e.amount) || 0); 
+    });
     const total = Object.values(totals).reduce((a, b) => a + b, 0);
-    return Object.entries(totals).map(([k, v]) => ({ name: k, value: v, percent: total ? (v / total) * 100 : 0 })).sort((a, b) => b.value - a.value);
+    return Object.entries(totals).map(([name, value]) => ({ name, value, percent: total ? (value / total) * 100 : 0 })).sort((a, b) => b.value - a.value);
   }, [expenses, chartPeriod]);
 
-  if (loading) return <div className="h-screen flex items-center justify-center bg-zinc-950 text-zinc-500"><Loader2 className="animate-spin w-8 h-8 text-purple-500" /></div>;
+  if (loading) return <div className="h-screen flex items-center justify-center bg-slate-50 text-slate-400"><Loader2 className="animate-spin" size={32} /></div>;
 
   const getAIBoxColor = () => {
     switch(analysisType) {
-      case 'roast': return 'bg-gradient-to-r from-orange-500 to-red-600 border-orange-500/50';
+      case 'roast': return 'bg-gradient-to-r from-orange-500 to-red-600 border-orange-200';
       case 'savings': return 'bg-gradient-to-r from-emerald-500 to-teal-600 border-emerald-200';
-      case 'forecast': return 'bg-gradient-to-r from-blue-500 to-indigo-600 border-blue-500/50';
-      default: return 'bg-gradient-to-r from-purple-500 to-indigo-600 border-purple-500/50';
+      case 'forecast': return 'bg-gradient-to-r from-blue-500 to-indigo-600 border-blue-200';
+      default: return 'bg-gradient-to-r from-purple-500 to-indigo-600 border-purple-200';
     }
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans pb-32 selection:bg-purple-500/30">
-      
-      {/* --- Header --- */}
-      <header className="pt-8 pb-6 px-6 sticky top-0 z-30 bg-zinc-950/80 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-md mx-auto flex justify-between items-end">
-          <div>
-            <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Total Balance</p>
-            <h1 className={`text-4xl font-black tracking-tight ${balance < 0 ? 'text-rose-400' : 'text-zinc-100'}`}>
-              ${balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-28 selection:bg-indigo-100">
+      {/* Interactive Header */}
+      <header className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 pb-16 shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-40 h-40 bg-white opacity-10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white opacity-10 rounded-full translate-y-1/3 -translate-x-1/3 blur-3xl"></div>
+        
+        <div className="max-w-md mx-auto flex justify-between items-center relative z-10">
+          <div className="animate-in slide-in-from-left duration-500">
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+                <CreditCard className="text-white" size={24} /> 
+              </div>
+              Krithagho's ExpenseLog
             </h1>
           </div>
-          <div className="bg-zinc-900 p-2 rounded-2xl border border-zinc-800">
-            <User className="text-zinc-400" size={24} />
+          <div className="text-right animate-in slide-in-from-right duration-500 delay-100">
+            <p className="text-xs text-indigo-100 uppercase tracking-wider font-semibold opacity-80">Net Balance</p>
+            <p className={`text-3xl font-bold tracking-tight transition-colors duration-300 ${balance < 0 ? 'text-red-200' : 'text-white'}`}>
+              ${balance.toFixed(2)}
+            </p>
           </div>
         </div>
       </header>
 
-      <main className="max-w-md mx-auto px-4 pt-6 relative z-10 space-y-8">
-        
-        {/* Notification Toast - FIXED POSITION */}
+      <main className="max-w-md mx-auto -mt-10 px-4 relative z-10">
         {notification && (
-          <div className={`fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-full shadow-2xl flex items-center gap-3 text-xs font-bold animate-in slide-in-from-bottom-5 fade-in duration-300 ${notification.type === 'error' ? 'bg-red-500/90 text-white border border-red-400/50' : 'bg-emerald-500/90 text-white border border-emerald-400/50'} backdrop-blur-md w-max`}>
-            {notification.type === 'error' ? <AlertCircle size={16}/> : <CheckCircle size={16}/>} {notification.msg}
+          <div className={`mb-4 p-3 rounded-xl shadow-lg flex items-center gap-3 text-sm font-medium animate-in slide-in-from-top-5 fade-in duration-300 border ${notification.type === 'error' ? 'bg-red-50 text-red-800 border-red-100' : 'bg-emerald-50 text-emerald-800 border-emerald-100'}`}>
+            <div className={`p-1 rounded-full ${notification.type === 'error' ? 'bg-red-100' : 'bg-emerald-100'}`}>
+              {notification.type === 'error' ? <AlertCircle size={16}/> : <CheckCircle size={16}/>}
+            </div>
+            {notification.msg}
           </div>
         )}
 
-        {/* --- TAB: ADD --- */}
-        {activeTab === 'add' && (
-          <div className="animate-in fade-in zoom-in duration-300 space-y-6">
-            
-            {/* Type Switcher */}
-            <div className="bg-zinc-900 p-1.5 rounded-full flex relative border border-zinc-800">
-              <button onClick={() => setEntryType('expense')} className={`flex-1 py-3 rounded-full text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300 ${entryType === 'expense' ? 'bg-zinc-800 text-white shadow-lg shadow-rose-900/20 border border-zinc-700' : 'text-zinc-500 hover:text-zinc-300'}`}>
-                <ArrowUpRight size={16} className={entryType === 'expense' ? 'text-rose-400' : ''}/> Expense
-              </button>
-              <button onClick={() => setEntryType('income')} className={`flex-1 py-3 rounded-full text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300 ${entryType === 'income' ? 'bg-zinc-800 text-white shadow-lg shadow-emerald-900/20 border border-zinc-700' : 'text-zinc-500 hover:text-zinc-300'}`}>
-                <ArrowDownLeft size={16} className={entryType === 'income' ? 'text-emerald-400' : ''}/> Income
-              </button>
-            </div>
-
-            {/* Main Input Card */}
-            <Card className="relative overflow-hidden border-zinc-800">
-              <div className={`absolute top-0 left-0 right-0 h-1 opacity-60 ${entryType === 'expense' ? 'bg-gradient-to-r from-rose-500 via-orange-500 to-rose-500' : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-500'}`}></div>
-              
-              {!showSmartAdd ? (
-                <button onClick={() => setShowSmartAdd(true)} className="w-full mb-6 group relative overflow-hidden rounded-2xl bg-zinc-800/50 p-4 transition-all hover:bg-zinc-800 border border-zinc-700/50 hover:border-indigo-500/30">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2.5 rounded-xl text-white shadow-lg shadow-indigo-900/20 group-hover:scale-110 transition-transform">
-                        <Wand2 size={20} />
-                      </div>
-                      <div className="text-left">
-                        <p className="text-sm font-bold text-zinc-100 group-hover:text-indigo-300 transition-colors">Magic Add</p>
-                        <p className="text-[10px] text-zinc-500">"Coffee $5" or upload receipt</p>
-                      </div>
-                    </div>
-                    <ChevronRight size={16} className="text-zinc-600 group-hover:text-indigo-400 transition-colors" />
-                  </div>
-                </button>
-              ) : (
-                <div className="mb-6 bg-zinc-950/50 p-4 rounded-2xl border border-indigo-500/30 animate-in slide-in-from-top-2">
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2"><Sparkles size={12}/> AI Assistant</span>
-                    <button onClick={() => setShowSmartAdd(false)} className="bg-zinc-800 p-1 rounded-full text-zinc-400 hover:text-white"><X size={14}/></button>
-                  </div>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <input autoFocus value={smartInput} onChange={e => setSmartInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSmartAdd()} placeholder="Type or speak..." className="w-full bg-zinc-900 text-sm text-white pl-4 pr-10 py-3 rounded-xl border border-zinc-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none" />
-                      <button onClick={handleVoiceInput} className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg ${isListening ? 'text-red-400 animate-pulse' : 'text-zinc-500 hover:text-zinc-300'}`}><Mic size={16}/></button>
-                    </div>
-                    <label className="bg-zinc-800 text-zinc-300 px-3 rounded-xl flex items-center justify-center cursor-pointer hover:bg-zinc-700 border border-zinc-700"><Camera size={18}/><input type="file" hidden onChange={handleReceiptUpload} /></label>
-                    <button onClick={handleSmartAdd} disabled={isProcessingAI} className="bg-indigo-600 text-white px-4 rounded-xl font-bold text-xs hover:bg-indigo-500">{isProcessingAI ? <Loader2 size={16} className="animate-spin"/> : 'Go'}</button>
-                  </div>
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Amount</label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl text-zinc-500">$</span>
-                    <input type="number" step="0.01" required value={amount} onChange={e => setAmount(e.target.value)} className="w-full bg-zinc-950/50 text-3xl font-black text-white pl-10 pr-4 py-4 rounded-2xl border-2 border-zinc-800 focus:border-indigo-500/50 focus:bg-zinc-900 outline-none transition-all placeholder-zinc-800" placeholder="0.00" />
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <input type="text" required value={item} onChange={e => setItem(e.target.value)} placeholder={entryType === 'income' ? "Source (e.g. Salary)" : "Item (e.g. Burger)"} className="w-full bg-zinc-900 text-zinc-100 px-5 py-4 rounded-2xl border border-zinc-800 focus:border-zinc-600 outline-none font-medium" />
-                  
-                  <div className="grid grid-cols-2 gap-3">
-                    {entryType === 'expense' && (
-                      <div className="relative">
-                        <select value={category} onChange={e => setCategory(e.target.value)} className="w-full bg-zinc-900 text-zinc-100 px-5 py-4 rounded-2xl border border-zinc-800 focus:border-zinc-600 outline-none appearance-none font-medium">
-                          {['Food', 'Transport', 'Utilities', 'Entertainment', 'Shopping', 'Health', 'Other'].map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
-                        <ArrowDownLeft size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
-                      </div>
-                    )}
-                    <input type="date" value={date} onChange={e => setDate(e.target.value)} className={`w-full bg-zinc-900 text-zinc-400 px-5 py-4 rounded-2xl border border-zinc-800 focus:border-zinc-600 outline-none font-medium ${entryType === 'income' ? 'col-span-2' : ''}`} />
-                  </div>
-                </div>
-
-                <button type="submit" disabled={isSubmitting} className={`w-full py-4 rounded-2xl font-bold text-white shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 ${entryType === 'income' ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/20' : 'bg-rose-600 hover:bg-rose-500 shadow-rose-900/20'}`}>
-                  {isSubmitting ? <Loader2 className="animate-spin" /> : <><CheckCircle size={20} /> Confirm Transaction</>}
-                </button>
-              </form>
-            </Card>
-          </div>
-        )}
-
-        {/* --- TAB: HISTORY --- */}
-        {activeTab === 'history' && (
-          <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-500">
-            <div className="bg-zinc-900 p-2 rounded-2xl border border-zinc-800 flex items-center gap-3 sticky top-24 z-20 backdrop-blur-lg bg-zinc-900/90">
-              <div className="bg-zinc-800 p-2 rounded-xl text-zinc-400"><Calendar size={18}/></div>
-              <input type="date" value={searchDate} onChange={(e) => setSearchDate(e.target.value)} className="bg-transparent text-zinc-200 text-sm font-bold outline-none flex-1" />
-              {searchDate && <button onClick={() => setSearchDate('')} className="p-2 text-zinc-500 hover:text-white"><X size={18}/></button>}
-            </div>
-
-            <div className="space-y-2">
-              {filteredExpenses.map((exp, i) => (
-                <Card key={exp.id} className={`p-4 flex justify-between items-center group border-l-4 ${exp.type === 'income' ? 'hover:border-emerald-500/30' : 'hover:border-rose-500/30'}`} style={{ borderLeftColor: exp.type === 'income' ? '#10b981' : '#f43f5e', animationDelay: `${i * 30}ms` }}>
-                  <div className="flex gap-4 items-center">
-                    <div className={`p-3 rounded-2xl ${exp.type === 'income' ? 'bg-emerald-900/20 text-emerald-400' : 'bg-rose-900/20 text-rose-400'}`}>
-                      {exp.type === 'income' ? <ArrowDownLeft size={20}/> : <ShoppingBag size={20}/>}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-zinc-200">{exp.item}</h4>
-                      <div className="flex items-center gap-2 mt-1">
-                        <CategoryBadge category={exp.category} type={exp.type} />
-                        <span className="text-[10px] text-zinc-500 font-mono">{exp.date}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className={`text-lg font-bold ${exp.type === 'income' ? 'text-emerald-400' : 'text-zinc-100'}`}>
-                      {exp.type === 'income' ? '+' : '-'}${Number(exp.amount).toFixed(2)}
-                    </p>
-                    <button onClick={() => handleDelete(exp.id)} className="text-zinc-600 hover:text-red-400 p-1 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={14}/></button>
-                  </div>
-                </Card>
-              ))}
-              {filteredExpenses.length === 0 && <div className="text-center py-12 text-zinc-600"><History size={32} className="mx-auto mb-2 opacity-20"/><p>No history found</p></div>}
-            </div>
-          </div>
-        )}
-
-        {/* --- TAB: VISUALIZE --- */}
-        {activeTab === 'visualize' && (
-          <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
-            {/* Balance Summary */}
-            <div className="grid grid-cols-2 gap-3">
-              <Card className="p-5 bg-gradient-to-br from-emerald-900/30 to-zinc-900 border-emerald-500/20">
-                <div className="text-emerald-500 text-xs font-bold uppercase mb-1 flex items-center gap-1"><ArrowDownLeft size={12}/> Income</div>
-                <div className="text-2xl font-black text-emerald-400">${totalIncome.toFixed(0)}</div>
-              </Card>
-              <Card className="p-5 bg-gradient-to-br from-rose-900/30 to-zinc-900 border-rose-500/20">
-                <div className="text-rose-500 text-xs font-bold uppercase mb-1 flex items-center gap-1"><ArrowUpRight size={12}/> Expenses</div>
-                <div className="text-2xl font-black text-rose-400">${totalExpenses.toFixed(0)}</div>
-              </Card>
-            </div>
-
-            {/* Chart Controls */}
-            <div className="flex bg-zinc-900 p-1 rounded-xl border border-zinc-800">
-              {[7, 30].map(p => (
-                <button key={p} onClick={() => setChartPeriod(p)} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${chartPeriod === p ? 'bg-zinc-800 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-300'}`}>
-                  Last {p} Days
-                </button>
-              ))}
-            </div>
-
-            {/* Month Survival Stats (RESTORED OLD LAYOUT) */}
-            <Card className="p-6 border-blue-900/30 bg-gradient-to-br from-zinc-900 to-blue-900/10">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h2 className="font-bold text-blue-200 text-lg flex items-center gap-2"><Calendar size={18}/> Survival Mode</h2>
-                  <p className="text-xs text-blue-400/60 mt-1">{monthStats.daysLeft} days ({monthStats.workingDaysLeft} working) left</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-[10px] text-zinc-500 uppercase tracking-widest">Daily Budget</p>
-                  <p className="text-2xl font-bold text-white">${(balance / Math.max(1, monthStats.daysLeft)).toFixed(0)}</p>
-                </div>
-              </div>
-              <div className="w-full bg-zinc-800 h-2 rounded-full overflow-hidden">
-                <div className="bg-blue-500 h-full rounded-full" style={{ width: `${((monthStats.daysInMonth - monthStats.daysLeft) / monthStats.daysInMonth) * 100}%` }}></div>
-              </div>
-            </Card>
-
-            {/* Charts */}
-            <Card className="p-6">
-              <h2 className="font-bold text-zinc-200 mb-6 flex items-center gap-2"><BarChart3 size={18} className="text-indigo-400"/> Spending Trend</h2>
-              <div className="h-40 flex items-end justify-between gap-1">
-                {chartData.map((d, i) => (
-                  <div key={i} className="flex-1 flex flex-col items-center group relative cursor-pointer" onClick={() => setFocusedBar(d.date)}>
-                    <div className="w-full bg-zinc-800/50 rounded-t-md relative overflow-hidden" style={{height: '100%'}}>
-                      <div className={`absolute bottom-0 left-0 right-0 transition-all duration-500 ${focusedBar === d.date ? 'bg-indigo-400 shadow-[0_0_15px_rgba(129,140,248,0.5)]' : 'bg-indigo-600/80 group-hover:bg-indigo-500'}`} style={{ height: `${Math.max(d.percent, 2)}%` }}></div>
-                    </div>
-                    {(i % (chartPeriod === 30 ? 5 : 1) === 0) && <span className="text-[9px] text-zinc-600 mt-2 font-mono">{d.day}</span>}
-                    {focusedBar === d.date && <div className="absolute bottom-full mb-2 bg-zinc-800 text-white text-[10px] px-2 py-1 rounded border border-zinc-700">${d.amount}</div>}
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            <Card className="p-6">
-              <h2 className="font-bold text-zinc-200 mb-6 flex items-center gap-2"><PieChart size={18} className="text-purple-400"/> Breakdown</h2>
-              <div className="space-y-3">
-                {categoryData.map((cat, i) => (
-                  <div key={i} className="group cursor-pointer" onClick={() => setFocusedCategory(cat.name === focusedCategory ? null : cat.name)}>
-                    <div className="flex justify-between text-xs mb-2">
-                      <span className={`font-bold ${focusedCategory === cat.name ? 'text-white' : 'text-zinc-400'}`}>{cat.name}</span>
-                      <span className="text-zinc-500 font-mono">${cat.value.toFixed(0)} ({Math.round(cat.percent)}%)</span>
-                    </div>
-                    <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full transition-all duration-500 ${['bg-purple-500', 'bg-blue-500', 'bg-emerald-500', 'bg-orange-500'][i % 4]}`} style={{ width: `${cat.percent}%` }}></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
-        )}
-
-        {/* --- TAB: AI TOOLS (NEW) --- */}
-        {activeTab === 'ai-tools' && (
-          <div className="space-y-6 animate-in slide-in-from-right duration-300">
-            
-            {/* AI Assistant Card (Restored & Styled) */}
-            <Card className="p-6 bg-gradient-to-br from-purple-900/20 to-zinc-900 border-purple-500/30 relative overflow-hidden">
-               <div className="absolute -right-10 -top-10 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl"></div>
-               <h2 className="font-bold text-lg mb-6 flex items-center gap-2 text-purple-300 relative z-10">
-                 <Bot size={20} /> AI Assistant
-               </h2>
-               <div className="grid grid-cols-2 gap-3 relative z-10">
-                  <button onClick={() => handleAIAction('analyze')} disabled={isProcessingAI} className="bg-zinc-800/80 hover:bg-zinc-700 border border-zinc-700/50 text-zinc-200 py-4 px-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all hover:scale-[1.02]">
-                     <Brain size={16} className="text-purple-400"/> Analyze
+        <div className="space-y-6">
+          {activeTab === 'add' && (
+            <div className="animate-in fade-in zoom-in duration-300">
+              <Card className="p-1">
+                {/* Entry Type Switcher */}
+                <div className="flex bg-slate-100/80 p-1 rounded-t-xl mb-4 border-b border-slate-100">
+                  <button 
+                    onClick={() => setEntryType('expense')} 
+                    className={`flex-1 py-3 text-sm font-bold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 ${entryType === 'expense' ? 'bg-white text-red-500 shadow-sm scale-100' : 'text-slate-400 hover:bg-slate-50'}`}
+                  >
+                    <div className={`p-1 rounded-full ${entryType === 'expense' ? 'bg-red-50' : 'bg-transparent'}`}><ArrowUpRight size={16}/></div> Expense
                   </button>
-                  <button onClick={() => handleAIAction('roast')} disabled={isProcessingAI} className="bg-zinc-800/80 hover:bg-zinc-700 border border-zinc-700/50 text-zinc-200 py-4 px-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all hover:scale-[1.02]">
-                     <Flame size={16} className="text-orange-400"/> Roast Me
+                  <button 
+                    onClick={() => setEntryType('income')} 
+                    className={`flex-1 py-3 text-sm font-bold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 ${entryType === 'income' ? 'bg-white text-green-600 shadow-sm scale-100' : 'text-slate-400 hover:bg-slate-50'}`}
+                  >
+                    <div className={`p-1 rounded-full ${entryType === 'income' ? 'bg-green-50' : 'bg-transparent'}`}><ArrowDownLeft size={16}/></div> Income
                   </button>
-                  <button onClick={() => handleAIAction('advice')} disabled={isProcessingAI} className="bg-zinc-800/80 hover:bg-zinc-700 border border-zinc-700/50 text-zinc-200 py-4 px-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all hover:scale-[1.02]">
-                     <PiggyBank size={16} className="text-emerald-400"/> Savings Tips
-                  </button>
-                  <button onClick={() => handleAIAction('opportunity')} disabled={isProcessingAI} className="bg-zinc-800/80 hover:bg-zinc-700 border border-zinc-700/50 text-zinc-200 py-4 px-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all hover:scale-[1.02]">
-                     <TrendingUp size={16} className="text-blue-400"/> Forecast
-                  </button>
-               </div>
-               {isProcessingAI && <div className="flex justify-center py-6"><Loader2 className="animate-spin text-purple-400" size={24}/></div>}
-               {analysisResult && (
-                  <div className={`mt-6 p-5 rounded-2xl border ${getAIBoxColor()} animate-in zoom-in relative z-10 bg-zinc-900/90`}>
-                     <div className="flex justify-between items-start mb-3">
-                        <h4 className="font-bold text-sm capitalize text-white flex items-center gap-2">
-                           <Sparkles size={14}/> {analysisType} Result
-                        </h4>
-                        <button onClick={() => setAnalysisResult(null)}><X size={14} className="text-white/60 hover:text-white"/></button>
-                     </div>
-                     <p className="text-xs text-zinc-200 leading-relaxed whitespace-pre-wrap">{analysisResult}</p>
-                  </div>
-               )}
-            </Card>
-
-            {/* Persona Card */}
-            <Card className="bg-gradient-to-br from-indigo-900/20 to-zinc-900 border-indigo-500/30 p-6 text-center">
-              {personaResult ? (
-                <div className="animate-in zoom-in">
-                  <div className="text-5xl mb-3">🧙‍♂️</div>
-                  <h2 className="text-xl font-black text-indigo-300 mb-1">{personaResult.class}</h2>
-                  <p className="text-xs text-indigo-200/60 italic">"{personaResult.desc}"</p>
                 </div>
-              ) : (
-                <div className="py-4">
-                  <User size={48} className="mx-auto text-indigo-500/20 mb-3"/>
-                  <button onClick={() => handleAIAction('persona', "Assign me a funny RPG class based on spending.")} className="bg-indigo-600 text-white px-6 py-2 rounded-full text-xs font-bold hover:bg-indigo-500 transition-all">Reveal Persona</button>
-                </div>
-              )}
-            </Card>
 
-            {/* Deep Dive Tools Grid */}
-            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest px-2">Deep Dive Tools</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { id: 'report', icon: GraduationCap, color: 'text-blue-400', bg: 'bg-blue-900/10', border: 'border-blue-500/20', label: 'Report Card', prompt: "Grade my finances A-F based on spending. Return JSON: {grade, score, comment}." },
-                { id: 'tax', icon: FileText, color: 'text-emerald-400', bg: 'bg-emerald-900/10', border: 'border-emerald-500/20', label: 'Tax Scout', prompt: "Find potential tax deductions in my expenses. Return JSON: [{item, amount, reason}]." },
-                { id: 'subscriptions', icon: Repeat, color: 'text-purple-400', bg: 'bg-purple-900/10', border: 'border-purple-500/20', label: 'Sub Detective', prompt: "Find recurring subscriptions. Return JSON: [{name, amount, frequency}]." },
-                { id: 'opportunity', icon: Gift, color: 'text-pink-400', bg: 'bg-pink-900/10', border: 'border-pink-500/20', label: 'Opp. Cost', prompt: "What cool thing could I buy if I cut my top expense category by 50%? Return JSON: {item, price, message}." },
-              ].map(tool => (
-                <div key={tool.id} className={`p-4 rounded-[24px] flex flex-col items-center justify-center gap-3 cursor-pointer transition-all hover:scale-[1.02] border ${tool.bg} ${tool.border}`} onClick={() => handleAIAction(tool.id, tool.prompt)}>
-                  <div className={`p-3 rounded-2xl bg-zinc-900 shadow-sm`}>
-                    <tool.icon size={20} className={tool.color} />
-                  </div>
-                  <span className="text-xs font-bold text-zinc-300">{tool.label}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Purchase Advisor */}
-            <Card className="p-6 border-pink-500/20">
-              <h2 className="font-bold text-zinc-200 mb-4 flex items-center gap-2"><ShoppingBag size={18} className="text-pink-400"/> Can I Afford This?</h2>
-              <div className="flex gap-2">
-                <input value={advisorInput} onChange={e => setAdvisorInput(e.target.value)} placeholder="e.g. PS5 $500" className="flex-1 bg-zinc-950 text-sm px-4 py-3 rounded-xl border border-zinc-700 focus:border-pink-500 outline-none" />
-                <button onClick={() => handleAIAction('advice', `Can I afford "${advisorInput}"? My balance is $${balance}. Return JSON: {verdict: "YES/NO/MAYBE", reason}.`)} className="bg-pink-600 text-white px-4 rounded-xl font-bold text-xs shadow-lg shadow-pink-900/20">Ask</button>
-              </div>
-              {advisorResult && (
-                <div className={`mt-4 p-4 rounded-xl border ${advisorResult.verdict === 'YES' ? 'bg-emerald-900/20 border-emerald-800 text-emerald-300' : 'bg-rose-900/20 border-rose-800 text-rose-300'}`}>
-                  <div className="font-black text-lg mb-1 flex items-center gap-2">{advisorResult.verdict === 'YES' ? <ThumbsUp size={18}/> : <ThumbsDown size={18}/>} {advisorResult.verdict}</div>
-                  <p className="text-xs opacity-80">{advisorResult.reason}</p>
-                </div>
-              )}
-            </Card>
-
-            {/* Dynamic AI Result Display Area */}
-            {(reportCard || taxDeductions || subscriptions || opportunityResult) && (
-              <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-4 animate-in fade-in duration-200">
-                <div className="bg-zinc-900 w-full max-w-sm rounded-[32px] border border-zinc-700 p-6 shadow-2xl animate-in slide-in-from-bottom-10">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-bold text-xl text-white flex items-center gap-2"><Bot size={24} className="text-indigo-400"/> AI Insight</h3>
-                    <button onClick={() => { setReportCard(null); setTaxDeductions(null); setSubscriptions(null); setOpportunityResult(null); }} className="bg-zinc-800 p-2 rounded-full text-zinc-400 hover:text-white"><X size={18}/></button>
-                  </div>
-                  
-                  <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                    {reportCard && (
-                      <div className="text-center">
-                        <div className="text-6xl font-black text-indigo-400 mb-2">{reportCard.grade}</div>
-                        <div className="text-sm text-zinc-400 italic px-4">"{reportCard.comment}"</div>
+                <div className="px-5 pb-5">
+                  <div className="mb-6">
+                    {!showSmartAdd ? (
+                      <div className="flex gap-3">
+                        <button onClick={() => setShowSmartAdd(true)} className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-4 rounded-xl text-sm font-semibold shadow-md shadow-indigo-200 flex items-center justify-center gap-2 hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all">
+                          <Wand2 size={18} /> Magic Fill
+                        </button>
+                        <label className="cursor-pointer bg-slate-800 text-white py-3 px-4 rounded-xl text-sm font-semibold shadow-md flex items-center justify-center gap-2 hover:bg-slate-900 hover:scale-[1.02] active:scale-95 transition-all">
+                          <Camera size={18} />
+                          <input type="file" accept="image/*" className="hidden" onChange={handleReceiptUpload} disabled={isProcessingAI} />
+                        </label>
                       </div>
-                    )}
-                    {opportunityResult && (
-                      <div className="text-center py-4">
-                        <p className="text-zinc-400 text-xs mb-3 uppercase tracking-widest">You could have bought</p>
-                        <div className="text-3xl font-black text-teal-300 mb-1 leading-tight">{opportunityResult.item}</div>
-                        <div className="text-sm font-bold text-teal-500/80 mb-4">{opportunityResult.price}</div>
-                        <div className="bg-teal-900/30 p-3 rounded-xl border border-teal-500/20">
-                           <p className="text-xs text-teal-200 italic">"{opportunityResult.message}"</p>
+                    ) : (
+                      <div className="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100 animate-in slide-in-from-top-2 duration-300">
+                        <div className="flex justify-between items-center mb-3">
+                          <label className="text-xs font-bold text-indigo-800 uppercase tracking-wider flex items-center gap-1">
+                            <Sparkles size={14} className="text-indigo-500 animate-pulse" /> Describe or Upload
+                          </label>
+                          <button onClick={() => setShowSmartAdd(false)} className="text-slate-400 hover:text-slate-600 hover:bg-indigo-100 p-1 rounded-full transition-colors">
+                            <X size={16} />
+                          </button>
+                        </div>
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                             <input 
+                               type="text" 
+                               autoFocus 
+                               value={smartInput} 
+                               onChange={e => setSmartInput(e.target.value)} 
+                               onKeyDown={e => e.key === 'Enter' && handleSmartAdd()} 
+                               placeholder='e.g. "Salary $5000"' 
+                               className="w-full text-sm pl-3 pr-10 py-3 rounded-xl border border-indigo-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                             />
+                             <button 
+                               onClick={handleVoiceInput} 
+                               disabled={isListening} 
+                               className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all ${isListening ? 'bg-red-100 text-red-600 animate-pulse' : 'text-slate-400 hover:bg-slate-100'}`}
+                             >
+                               <Mic size={16} />
+                             </button>
+                          </div>
+                          <button 
+                            onClick={handleSmartAdd} 
+                            disabled={isProcessingAI || !smartInput} 
+                            className="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-indigo-700 disabled:opacity-50 flex items-center shadow-md transition-all active:scale-95"
+                          >
+                            {isProcessingAI ? <Loader2 size={16} className="animate-spin" /> : 'Go'}
+                          </button>
                         </div>
                       </div>
                     )}
-                    {subscriptions && (
-                      <div className="space-y-2">
-                        {subscriptions.length ? subscriptions.map((s, i) => (
-                          <div key={i} className="flex justify-between p-4 bg-zinc-800 rounded-2xl">
-                            <span className="font-bold text-zinc-200">{s.name}</span>
-                            <span className="text-purple-400 font-mono font-bold">${s.amount}<span className="text-zinc-600 text-xs font-normal">/{s.frequency?.[0]}</span></span>
-                          </div>
-                        )) : <p className="text-center text-zinc-500">No subscriptions found.</p>}
+                  </div>
+
+                  <form onSubmit={handleSubmit} className="space-y-5">
+                    <div className="group">
+                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 group-focus-within:text-indigo-600 transition-colors">Amount</label>
+                      <div className="relative transform transition-all duration-200 group-focus-within:scale-[1.01]">
+                        <DollarSign className="absolute left-4 top-3.5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={20} />
+                        <input 
+                          type="number" 
+                          step="0.01" 
+                          required 
+                          value={amount} 
+                          onChange={e => setAmount(e.target.value)} 
+                          className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-xl font-bold text-slate-800 transition-all shadow-sm"
+                          placeholder="0.00"
+                        />
                       </div>
+                    </div>
+                    
+                    {entryType === 'income' ? (
+                       <div className="space-y-5 animate-in fade-in slide-in-from-left-2">
+                         <div>
+                           <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Source</label>
+                           <input type="text" required value={item} onChange={e => setItem(e.target.value)} placeholder="e.g. Freelance" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-green-500 outline-none font-medium transition-all"/>
+                         </div>
+                         <div>
+                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Date</label>
+                            <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-green-500 outline-none font-medium transition-all"/>
+                         </div>
+                       </div>
+                    ) : (
+                       <div className="space-y-5 animate-in fade-in slide-in-from-right-2">
+                         <div>
+                           <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Details</label>
+                           <input type="text" required value={item} onChange={e => setItem(e.target.value)} placeholder="What did you buy?" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none font-medium transition-all"/>
+                         </div>
+                         <div className="grid grid-cols-2 gap-4">
+                           <div>
+                             <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Category</label>
+                             <div className="relative">
+                               <select value={category} onChange={e => setCategory(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none font-medium transition-all">
+                                 {['Food', 'Transport', 'Utilities', 'Entertainment', 'Shopping', 'Health', 'Other'].map(c => <option key={c} value={c}>{c}</option>)}
+                               </select>
+                               <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                 <ArrowDownLeft size={14} className="rotate-45"/>
+                               </div>
+                             </div>
+                           </div>
+                           <div>
+                              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Date</label>
+                              <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none font-medium transition-all"/>
+                           </div>
+                         </div>
+                       </div>
                     )}
-                    {taxDeductions && (
-                      <div className="space-y-2">
-                        {taxDeductions.length ? taxDeductions.map((t, i) => (
-                          <div key={i} className="p-4 bg-zinc-800 rounded-2xl">
-                            <div className="flex justify-between mb-1">
-                              <span className="font-bold text-zinc-200">{t.item}</span>
-                              <span className="text-emerald-400 font-mono font-bold">${t.amount}</span>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Notes</label>
+                      <textarea value={notes} onChange={e => setNotes(e.target.value)} rows="2" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none resize-none transition-all" placeholder="Optional details..."></textarea>
+                    </div>
+
+                    <button 
+                      type="submit" 
+                      disabled={isSubmitting} 
+                      className={`w-full text-white font-bold py-4 rounded-xl shadow-lg transform transition-all duration-200 hover:-translate-y-1 hover:shadow-xl active:translate-y-0 active:scale-[0.98] flex items-center justify-center gap-2 ${entryType === 'income' ? 'bg-gradient-to-r from-green-500 to-emerald-600 shadow-green-200' : 'bg-gradient-to-r from-indigo-600 to-purple-600 shadow-indigo-200'}`}
+                    >
+                      {isSubmitting ? <Loader2 className="animate-spin" /> : <><PlusCircle size={20} strokeWidth={2.5} /> {entryType === 'income' ? 'Add Income' : 'Save Expense'}</>}
+                    </button>
+                  </form>
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {activeTab === 'history' && (
+            <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-500">
+               {/* Date Search Filter */}
+               <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 sticky top-0 z-20 backdrop-blur-md bg-white/90">
+                  <div className="bg-indigo-50 p-2.5 rounded-xl text-indigo-600">
+                      <Calendar size={20} />
+                  </div>
+                  <div className="flex-1">
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Filter by Date</label>
+                      <input 
+                          type="date" 
+                          value={searchDate}
+                          onChange={(e) => setSearchDate(e.target.value)}
+                          className="w-full bg-transparent outline-none text-slate-700 text-sm font-bold cursor-pointer"
+                      />
+                  </div>
+                  {searchDate && (
+                      <button onClick={() => setSearchDate('')} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+                          <X size={20} />
+                      </button>
+                  )}
+               </div>
+
+              {filteredExpenses.length === 0 ? (
+                  <div className="text-center py-20 text-slate-400 flex flex-col items-center justify-center">
+                      <div className="bg-slate-100 p-6 rounded-full mb-4">
+                        <History size={48} className="opacity-40" />
+                      </div>
+                      <p className="font-medium">{searchDate ? "No records found for this day." : "No records yet."}</p>
+                  </div>
+              ) : (
+                  <div className="space-y-3">
+                    {filteredExpenses.map((exp, index) => (
+                      <Card 
+                        key={exp.id} 
+                        className="p-4 flex justify-between items-center group cursor-pointer"
+                        style={{ animationDelay: `${index * 50}ms` }} // Staggered animation
+                      >
+                        <div className="flex gap-4 items-center">
+                          <div className={`p-3 rounded-2xl shadow-sm ${exp.type === 'income' ? 'bg-green-100 text-green-600' : 'bg-red-50 text-red-500'}`}>
+                            {exp.type === 'income' ? <ArrowDownLeft size={20}/> : <ArrowUpRight size={20}/>}
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-slate-800 text-base">{exp.item}</h4>
+                            <div className="flex items-center gap-2 mt-1">
+                              <CategoryBadge category={exp.category} type={exp.type} />
+                              <span className="text-xs font-medium text-slate-400 flex items-center gap-1">
+                                {new Date(exp.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                              </span>
                             </div>
-                            <p className="text-[10px] text-zinc-500">{t.reason}</p>
                           </div>
-                        )) : <p className="text-center text-zinc-500">No deductions found.</p>}
+                        </div>
+                        <div className="text-right">
+                          <p className={`text-lg font-bold ${exp.type === 'income' ? 'text-green-600' : 'text-slate-800'}`}>
+                            {exp.type === 'income' ? '+' : '-'}${Number(exp.amount).toFixed(2)}
+                          </p>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleDelete(exp.id); }} 
+                            className="text-red-300 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'visualize' && (
+            <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
+              {/* Balance Sheet Card */}
+              <Card className="p-6 bg-white relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-5">
+                   <Wallet size={120} />
+                </div>
+                <h2 className="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800 relative z-10">
+                   <Wallet size={20} className="text-indigo-500"/> Balance Sheet
+                </h2>
+                <div className="space-y-4 relative z-10">
+                   <div className="flex justify-between items-center p-4 bg-green-50/50 rounded-2xl border border-green-100/50 backdrop-blur-sm">
+                      <div className="flex items-center gap-3 text-green-800 font-bold"><div className="bg-white p-1.5 rounded-lg shadow-sm"><ArrowDownLeft size={16}/></div> Income</div>
+                      <div className="text-lg font-bold text-green-700">+${totalIncome.toFixed(2)}</div>
+                   </div>
+                   <div className="flex justify-between items-center p-4 bg-red-50/50 rounded-2xl border border-red-100/50 backdrop-blur-sm">
+                      <div className="flex items-center gap-3 text-red-800 font-bold"><div className="bg-white p-1.5 rounded-lg shadow-sm"><ArrowUpRight size={16}/></div> Expenses</div>
+                      <div className="text-lg font-bold text-red-700">-${totalExpenses.toFixed(2)}</div>
+                   </div>
+                   <div className="border-t border-dashed border-slate-200 pt-4 mt-2">
+                     <div className="flex justify-between items-center">
+                        <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Net Remaining</div>
+                        <div className={`text-3xl font-black ${balance >= 0 ? 'text-indigo-600' : 'text-red-600'}`}>
+                          ${balance.toFixed(2)}
+                        </div>
+                     </div>
+                   </div>
+                </div>
+              </Card>
+
+              <div className="flex bg-slate-200 p-1 rounded-xl">
+                <button onClick={() => setChartPeriod(7)} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-300 ${chartPeriod === 7 ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Last 7 Days</button>
+                <button onClick={() => setChartPeriod(30)} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-300 ${chartPeriod === 30 ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Last 30 Days</button>
+              </div>
+
+              {/* Month Survival Stats */}
+              <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 text-white border-none shadow-xl relative overflow-hidden group">
+                <div className="absolute -right-10 -top-10 w-40 h-40 bg-indigo-500 rounded-full opacity-20 blur-3xl group-hover:opacity-30 transition-opacity duration-500"></div>
+                <h2 className="font-bold text-lg mb-6 flex items-center gap-2 text-white/90 relative z-10"><Calendar size={20} className="text-indigo-400"/> Month Survival</h2>
+                <div className="grid grid-cols-2 gap-6 relative z-10">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2 text-slate-400 text-[10px] font-bold uppercase tracking-wider"><Clock size={12} /> Total Days</div>
+                    <div className="flex items-baseline gap-1"><span className="text-3xl font-bold text-white">{monthStats.daysRemaining}</span><span className="text-xs text-slate-400 font-medium">/ {monthStats.totalDays} left</span></div>
+                    <div className="w-full bg-slate-700/50 h-2 rounded-full mt-3 overflow-hidden backdrop-blur-sm"><div className="bg-gradient-to-r from-indigo-500 to-purple-500 h-full rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)]" style={{ width: `${(monthStats.daysRemaining / monthStats.totalDays) * 100}%` }}></div></div>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-2 text-slate-400 text-[10px] font-bold uppercase tracking-wider"><Briefcase size={12} /> Working Days</div>
+                    <div className="flex items-baseline gap-1"><span className="text-3xl font-bold text-emerald-400">{monthStats.workingDaysLeft}</span><span className="text-xs text-slate-400 font-medium">/ {monthStats.totalWorkingDays} left</span></div>
+                    <div className="w-full bg-slate-700/50 h-2 rounded-full mt-3 overflow-hidden backdrop-blur-sm"><div className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]" style={{ width: `${(monthStats.workingDaysLeft / monthStats.totalWorkingDays) * 100}%` }}></div></div>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-400 mt-6 text-center relative z-10 bg-slate-800/50 p-2 rounded-lg backdrop-blur-sm border border-white/5">
+                  Budget for remaining days: <strong className="text-white">${(balance / Math.max(1, monthStats.daysRemaining)).toFixed(0)}</strong> / day
+                </p>
+              </Card>
+
+              <Card className="p-6">
+                <h2 className="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800"><BarChart3 size={20} className="text-indigo-500"/> Spending Trend</h2>
+                <div className="h-48 flex items-end justify-between gap-2">
+                  {chartData.data.map((d, i) => { 
+                    const showLabel = chartPeriod === 7 || i % 5 === 0; 
+                    return (
+                      <div 
+                        key={i} 
+                        className="flex flex-col items-center flex-1 group relative cursor-pointer h-full justify-end" 
+                        onClick={() => setFocusedBar(d.date === focusedBar ? null : d.date)}
+                      >
+                        <div className="w-full relative flex flex-col justify-end h-[80%]">
+                          <div 
+                            className={`rounded-t-lg w-full transition-all duration-500 ease-out ${focusedBar === d.date ? 'bg-orange-500 shadow-lg shadow-orange-200 scale-105' : 'bg-indigo-500 hover:bg-indigo-400'}`} 
+                            style={{ height: `${Math.max(d.percent, 5)}%` }}
+                          ></div>
+                        </div>
+                        <div className="h-6 flex items-center justify-center">
+                          {showLabel && <span className="text-[10px] text-slate-400 font-bold mt-2">{chartPeriod === 7 ? d.day : d.day[0]}</span>}
+                        </div>
+                        
+                        {(focusedBar === d.date) && (
+                          <div className="absolute bottom-[90%] mb-2 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs p-3 rounded-xl shadow-xl z-20 w-32 text-center animate-in zoom-in duration-200">
+                            <div className="font-bold text-slate-300 border-b border-slate-600 pb-1 mb-1">{d.fullDate}</div>
+                            <div className="text-lg font-bold text-white mb-1">${d.amount.toFixed(0)}</div>
+                            {d.items.length > 0 && <div className="text-[10px] text-slate-400 italic truncate">{d.items[0].item}</div>}
+                            {d.items.length > 1 && <div className="text-[9px] text-slate-500">+{d.items.length - 1} more</div>}
+                            <div className="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-800 rotate-45"></div>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    ); 
+                  })}
+                </div>
+              </Card>
+
+              <Card className="p-6">
+                <h2 className="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800"><PieChart size={20} className="text-purple-500"/> Expenses Breakdown</h2>
+                <div className="flex justify-center mb-8 relative h-48">
+                  {categoryBreakdown.length > 0 ? (
+                    <div className="w-48 h-48 rounded-full relative shadow-xl shadow-purple-100" style={{ background: `conic-gradient(${categoryBreakdown.map((c, i, arr) => { const prevPercent = arr.slice(0, i).reduce((acc, curr) => acc + curr.percent, 0); const color = ['#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6'][i % 5]; return `${color} 0 ${prevPercent + c.percent}%`; }).join(', ')})` }}>
+                      <div className="absolute inset-3 bg-white rounded-full flex items-center justify-center flex-col shadow-inner">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Top Expense</span>
+                        <span className="text-lg font-black text-slate-800 mt-1">{categoryBreakdown[0]?.name || '-'}</span>
+                        <span className="text-xs font-bold text-purple-500">{Math.round(categoryBreakdown[0]?.percent || 0)}%</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-48 h-48 rounded-full border-4 border-slate-100 border-dashed flex items-center justify-center text-slate-300 text-xs font-bold">No Data</div>
+                  )}
+                </div>
+                <div className="space-y-3">
+                  {categoryBreakdown.map((cat, i) => (
+                    <div 
+                      key={cat.name} 
+                      className={`p-3 rounded-xl transition-all cursor-pointer flex justify-between items-center group ${focusedCategory === cat.name ? 'bg-slate-50 ring-2 ring-indigo-100' : 'hover:bg-slate-50'}`} 
+                      onClick={() => setFocusedCategory(focusedCategory === cat.name ? null : cat.name)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: ['#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6'][i % 5] }}></div>
+                        <span className="font-bold text-slate-700 text-sm">{cat.name}</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-slate-800 text-sm">${cat.value.toFixed(0)}</div>
+                        <div className="text-[10px] font-bold text-slate-400">{Math.round(cat.percent)}%</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {activeTab === 'ai-tools' && (
+            <div className="space-y-6 animate-in slide-in-from-right duration-300">
+              
+              <Card className="p-6 border-emerald-100 bg-gradient-to-b from-white to-emerald-50/30">
+                <h2 className="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800"><Bot size={20} className="text-emerald-500"/> AI Assistant</h2>
+                
+                {/* AI Actions Grid */}
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                  <button onClick={() => handleAnalyze('helpful')} disabled={isProcessingAI} className="bg-white border border-emerald-100 text-emerald-700 py-3 px-3 rounded-xl text-xs font-bold shadow-sm hover:bg-emerald-50 hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group">
+                    <Brain size={16} className="group-hover:scale-110 transition-transform"/> Analyze
+                  </button>
+                  <button onClick={() => handleAnalyze('roast')} disabled={isProcessingAI} className="bg-white border border-orange-100 text-orange-700 py-3 px-3 rounded-xl text-xs font-bold shadow-sm hover:bg-orange-50 hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group">
+                    <Flame size={16} className="group-hover:scale-110 transition-transform"/> Roast Me
+                  </button>
+                  <button onClick={() => handleAnalyze('savings')} disabled={isProcessingAI} className="bg-white border border-teal-100 text-teal-700 py-3 px-3 rounded-xl text-xs font-bold shadow-sm hover:bg-teal-50 hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group">
+                    <PiggyBank size={16} className="group-hover:scale-110 transition-transform"/> Tips 💰
+                  </button>
+                  <button onClick={() => handleAnalyze('forecast')} disabled={isProcessingAI} className="bg-white border border-blue-100 text-blue-700 py-3 px-3 rounded-xl text-xs font-bold shadow-sm hover:bg-blue-50 hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group">
+                    <TrendingUp size={16} className="group-hover:scale-110 transition-transform"/> Forecast 🔮
+                  </button>
+                </div>
+
+                {isProcessingAI && (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="animate-spin text-emerald-500" size={32}/>
                   </div>
+                )}
+
+                {analysisResult && (
+                  <div className={`p-5 rounded-2xl shadow-lg relative animate-in zoom-in duration-300 text-white ${getAIBoxColor()}`}>
+                    <button onClick={() => setAnalysisResult(null)} className="absolute top-3 right-3 text-white/60 hover:text-white bg-black/10 hover:bg-black/20 rounded-full p-1 transition-colors">
+                      <X size={14} />
+                    </button>
+                    <div className="text-sm font-medium leading-relaxed opacity-95 whitespace-pre-wrap drop-shadow-sm">
+                      {analysisResult}
+                    </div>
+                    <div className="absolute -bottom-4 -right-4 opacity-10 transform rotate-12">
+                       <Sparkles size={80} />
+                    </div>
+                  </div>
+                )}
+              </Card>
+              
+              {/* Financial Report Card */}
+              <Card className="p-6 bg-gradient-to-br from-white to-indigo-50 border-indigo-100">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="font-bold text-lg flex items-center gap-2 text-indigo-900">
+                    <GraduationCap size={20} className="text-indigo-600"/> Financial Report Card
+                  </h2>
+                  <button onClick={handleReportCard} className="text-xs bg-white border border-indigo-200 text-indigo-600 px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-50 transition-colors shadow-sm">
+                    Get Grade
+                  </button>
+                </div>
+                {reportCard ? (
+                   <div className="animate-in zoom-in duration-300 bg-white p-4 rounded-xl border border-indigo-100 shadow-sm">
+                      <div className="flex items-center justify-between mb-3 border-b border-indigo-50 pb-2">
+                        <div className="text-4xl font-black text-indigo-600">{reportCard.grade}</div>
+                        <div className="text-right">
+                           <div className="text-xs font-bold text-slate-400 uppercase">Score</div>
+                           <div className="text-xl font-bold text-slate-800">{reportCard.score}/100</div>
+                        </div>
+                      </div>
+                      <p className="text-sm text-slate-600 italic">"{reportCard.comment}"</p>
+                   </div>
+                ) : (
+                   <div className="text-center py-6 text-indigo-300">
+                     <GraduationCap size={40} className="mx-auto mb-2 opacity-20" />
+                     <p className="text-xs font-medium text-indigo-400">How good are your habits?</p>
+                   </div>
+                )}
+              </Card>
+
+              {/* Tax Deduction Scout */}
+              <Card className="p-6 bg-gradient-to-br from-white to-blue-50 border-blue-100">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="font-bold text-lg flex items-center gap-2 text-blue-900">
+                    <FileText size={20} className="text-blue-600"/> Tax Deduction Scout
+                  </h2>
+                  <button onClick={handleTaxScout} className="text-xs bg-white border border-blue-200 text-blue-600 px-3 py-1.5 rounded-lg font-bold hover:bg-blue-50 transition-colors shadow-sm">
+                    Scan
+                  </button>
+                </div>
+                {taxDeductions ? (
+                   taxDeductions.length > 0 ? (
+                     <div className="space-y-2 animate-in slide-in-from-bottom-2">
+                        {taxDeductions.map((item, i) => (
+                           <div key={i} className="flex justify-between items-start p-3 bg-white rounded-xl border border-blue-100 shadow-sm">
+                              <div>
+                                 <div className="font-bold text-slate-800 text-sm">{item.item}</div>
+                                 <div className="text-xs text-blue-500 font-medium mt-0.5">{item.reason}</div>
+                              </div>
+                              <div className="font-bold text-blue-700 text-sm">${item.amount}</div>
+                           </div>
+                        ))}
+                        <p className="text-[10px] text-slate-400 text-center mt-2 italic">Consult a tax pro. AI suggestions only.</p>
+                     </div>
+                   ) : <p className="text-sm text-slate-500 italic text-center py-2">No obvious deductions found.</p>
+                ) : (
+                   <div className="text-center py-6 text-blue-300">
+                     <FileText size={40} className="mx-auto mb-2 opacity-20" />
+                     <p className="text-xs font-medium text-blue-400">Find write-offs for your freelance work</p>
+                   </div>
+                )}
+              </Card>
+
+              {/* Purchase Advisor */}
+              <Card className="p-6">
+                 <h2 className="font-bold text-lg mb-4 flex items-center gap-2 text-slate-800"><ShoppingBag size={20} className="text-pink-500"/> Can I Afford This?</h2>
+                 <div className="flex gap-2 mb-4">
+                   <input type="text" value={advisorInput} onChange={e => setAdvisorInput(e.target.value)} placeholder="e.g. New Sneakers $120" className="flex-1 px-4 py-2.5 text-sm border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-pink-500 transition-all"/>
+                   <button onClick={handlePurchaseAdvice} disabled={isProcessingAI} className="bg-pink-500 text-white px-4 rounded-xl hover:bg-pink-600 disabled:opacity-50 font-bold text-xs shadow-md shadow-pink-200 transition-all active:scale-95">Ask AI</button>
+                 </div>
+                 {advisorResult && (
+                   <div className={`p-4 rounded-xl border-2 animate-in zoom-in duration-300 ${advisorResult.verdict === 'YES' ? 'bg-green-50 border-green-100 text-green-800' : advisorResult.verdict === 'NO' ? 'bg-red-50 border-red-100 text-red-800' : 'bg-yellow-50 border-yellow-100 text-yellow-800'}`}>
+                      <div className="flex items-center gap-2 font-black text-lg mb-2">{advisorResult.verdict === 'YES' ? <ThumbsUp size={20}/> : advisorResult.verdict === 'NO' ? <ThumbsDown size={20}/> : <HelpCircle size={20}/>}{advisorResult.verdict}</div><p className="text-sm font-medium leading-relaxed opacity-90">{advisorResult.reason}</p>
+                   </div>
+                 )}
+              </Card>
+
+              {/* Subscription Detective */}
+              <Card className="p-6 bg-gradient-to-br from-white to-purple-50/50 border-purple-100">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="font-bold text-lg flex items-center gap-2 text-purple-900"><Repeat size={20} className="text-purple-600"/> Subscription Detective</h2>
+                  <button onClick={handleFindSubscriptions} disabled={isProcessingAI} className="text-xs bg-white border border-purple-200 text-purple-600 px-3 py-1.5 rounded-lg font-bold hover:bg-purple-50 transition-colors shadow-sm flex items-center gap-1">{isProcessingAI ? <Loader2 size={12} className="animate-spin"/> : 'Scan'}</button>
+                </div>
+                {subscriptions ? (
+                  subscriptions.length > 0 ? (
+                    <div className="space-y-3 animate-in slide-in-from-bottom-2">
+                      {subscriptions.map((sub, i) => (
+                        <div key={i} className="flex justify-between items-center p-3 bg-white rounded-xl border border-purple-100 shadow-sm">
+                          <div><div className="font-bold text-slate-800">{sub.name}</div><div className="text-xs text-purple-500 font-medium">{sub.frequency}</div></div>
+                          <div className="font-bold text-purple-700">${sub.amount}</div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : <p className="text-sm text-slate-500 italic text-center py-2">No subscriptions found! 🎉</p>
+                ) : (
+                  <div className="text-center py-6 text-purple-300"><Repeat size={40} className="mx-auto mb-2 opacity-20" /><p className="text-xs font-medium text-purple-400">Tap scan to find recurring bills</p></div>
+                )}
+              </Card>
+
+              {/* Opportunity Cost */}
+              <Card className="p-6 bg-gradient-to-br from-teal-50 to-white border-teal-100">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="font-bold text-lg flex items-center gap-2 text-teal-900"><Gift size={20} className="text-teal-600"/> Opportunity Cost</h2>
+                  <button onClick={handleOpportunityCost} className="text-xs bg-white border border-teal-200 text-teal-600 px-3 py-1.5 rounded-lg font-bold hover:bg-teal-50 transition-colors shadow-sm">Calculate</button>
+                </div>
+                {opportunityResult ? (
+                  <div className="text-center py-2 animate-in zoom-in duration-300">
+                    <div className="text-teal-800 font-medium text-sm mb-2">Instead of spending on your top category, you could buy:</div>
+                    <div className="font-black text-xl text-teal-700 mb-1">{opportunityResult.item} ({opportunityResult.price})</div>
+                    <p className="text-xs text-teal-600 italic">"{opportunityResult.message}"</p>
+                  </div>
+                ) : (
+                  <div className="text-center py-6 text-teal-300"><Gift size={40} className="mx-auto mb-2 opacity-20" /><p className="text-xs font-medium text-teal-400">See what else you could buy!</p></div>
+                )}
+              </Card>
+              
+              {/* Spending Persona */}
+              <Card className="p-6 bg-gradient-to-br from-indigo-50 to-white border-indigo-100">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="font-bold text-lg flex items-center gap-2 text-indigo-900"><User size={20} className="text-indigo-600"/> Spending Persona</h2>
+                  <button onClick={handleGeneratePersona} className="text-xs bg-white border border-indigo-200 text-indigo-600 px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-50 transition-colors shadow-sm">Generate</button>
+                </div>
+                {personaResult ? (
+                  <div className="text-center py-4 animate-in fade-in duration-500"><div className="text-4xl mb-3 animate-bounce">🧙‍♂️</div><h3 className="font-black text-indigo-800 text-xl mb-2">{personaResult.class}</h3><p className="text-sm text-indigo-600/80 italic px-4">"{personaResult.desc}"</p></div>
+                ) : (
+                  <div className="text-center py-8 text-indigo-300"><User size={48} className="mx-auto mb-2 opacity-20" /><p className="text-xs font-medium">Reveal your financial RPG class!</p></div>
+                )}
+              </Card>
+
+            </div>
+          )}
+
+          {activeTab === 'chat' && (
+            <div className="flex flex-col h-[calc(100vh-180px)] animate-in slide-in-from-right duration-300">
+              <div className="flex-1 overflow-y-auto space-y-4 p-4 pb-2">
+                {chatMessages.map((msg, i) => (
+                  <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2`}>
+                    <div className={`max-w-[85%] p-4 rounded-2xl text-sm shadow-sm ${msg.role === 'user' ? 'bg-indigo-600 text-white rounded-br-sm' : 'bg-white border border-slate-100 text-slate-800 rounded-bl-sm'}`}>
+                      {msg.text}
+                    </div>
+                  </div>
+                ))}
+                {isChatLoading && (<div className="flex justify-start animate-in fade-in"><div className="bg-white border border-slate-100 p-4 rounded-2xl rounded-bl-sm shadow-sm flex gap-2 items-center"><div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div><div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce delay-100"></div><div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce delay-200"></div></div></div>)}
+                <div ref={chatEndRef} />
+              </div>
+              <div className="p-4 bg-white/80 backdrop-blur-md border-t border-slate-200 fixed bottom-[70px] left-0 right-0 max-w-md mx-auto">
+                <div className="flex gap-2">
+                  <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleChat()} placeholder="Ask about your spending..." className="flex-1 px-5 py-3 rounded-full bg-slate-100 border-none focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium transition-all focus:bg-white" />
+                  <button onClick={handleChat} disabled={isChatLoading || !chatInput} className="bg-indigo-600 text-white p-3 rounded-full hover:bg-indigo-700 disabled:opacity-50 shadow-md hover:shadow-lg transition-all active:scale-90"><Send size={20} /></button>
                 </div>
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
 
-        {/* --- TAB: CHAT --- */}
-        {activeTab === 'chat' && (
-          <div className="h-[calc(100vh-220px)] flex flex-col animate-in slide-in-from-right duration-300">
-            <div className="flex-1 overflow-y-auto space-y-4 p-1">
-              {chatMessages.map((msg, i) => (
-                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2`}>
-                  <div className={`max-w-[85%] p-4 rounded-2xl text-sm shadow-sm ${msg.role === 'user' ? 'bg-indigo-600 text-white rounded-br-sm' : 'bg-zinc-800 text-zinc-300 rounded-bl-sm'}`}>
-                    {msg.text}
-                  </div>
+          {activeTab === 'settings' && (
+            <div className="space-y-6 animate-in slide-in-from-right duration-300">
+              <Card className="p-6">
+                <h2 className="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800"><Settings size={22} className="text-slate-400"/> Configuration</h2>
+                <div className="mb-8 space-y-5">
+                  <div><label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Google Apps Script URL</label><input type="text" value={scriptUrl} onChange={e => setScriptUrl(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium transition-all"/></div>
+                  <div><label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Gemini API Key</label><input type="password" value={geminiKey} onChange={e => setGeminiKey(e.target.value)} placeholder="AIzaSy..." className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none font-medium transition-all"/></div>
+                  <button onClick={handleSaveSettings} className="w-full py-3.5 bg-slate-800 text-white text-sm font-bold rounded-xl hover:bg-slate-900 shadow-lg shadow-slate-200 transition-all hover:-translate-y-0.5">Save Configuration</button>
                 </div>
-              ))}
-              {isChatLoading && <div className="self-start bg-zinc-800 p-4 rounded-2xl rounded-bl-none"><Loader2 className="animate-spin w-4 h-4 text-zinc-500"/></div>}
-              <div ref={chatEndRef} />
+                <div className="border-t pt-6 border-slate-100"><SetupGuide /></div>
+              </Card>
+              <div className="text-center pb-4"><button onClick={() => signOut(auth)} className="text-red-500 text-sm font-bold flex items-center justify-center gap-2 mx-auto hover:bg-red-50 px-6 py-3 rounded-xl transition-all"><LogOut size={18} /> Sign Out</button></div>
             </div>
-            <div className="fixed bottom-24 left-0 right-0 px-4 max-w-md mx-auto">
-              <div className="bg-zinc-900/90 backdrop-blur-md p-2 rounded-3xl border border-zinc-800 flex gap-2 shadow-2xl">
-                <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleChat()} placeholder="Ask me anything..." className="flex-1 bg-transparent text-sm text-white px-4 focus:outline-none" />
-                <button onClick={handleChat} className="bg-indigo-600 p-3 rounded-full text-white hover:bg-indigo-500 transition-colors"><Send size={18}/></button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* --- TAB: SETTINGS --- */}
-        {activeTab === 'settings' && (
-          <div className="space-y-6 animate-in slide-in-from-right duration-300">
-            <Card>
-              <h2 className="font-bold text-zinc-200 mb-6 flex items-center gap-2"><Settings size={20} className="text-zinc-500"/> Config</h2>
-              <div className="space-y-4">
-                <div><label className="block text-[10px] font-bold text-zinc-500 uppercase mb-2">Sheet URL</label><input type="text" value={scriptUrl} onChange={e => setScriptUrl(e.target.value)} className="w-full bg-zinc-950 text-zinc-300 px-4 py-3 rounded-xl border border-zinc-800 text-sm focus:border-indigo-500 outline-none"/></div>
-                <div><label className="block text-[10px] font-bold text-zinc-500 uppercase mb-2">Gemini API Key</label><input type="password" value={geminiKey} onChange={e => setGeminiKey(e.target.value)} placeholder="AIzaSy..." className="w-full bg-zinc-950 text-zinc-300 px-4 py-3 rounded-xl border border-zinc-800 text-sm focus:border-purple-500 outline-none"/></div>
-                <button onClick={handleSaveSettings} className="w-full py-3 bg-zinc-100 text-zinc-900 font-bold rounded-xl text-sm hover:bg-white transition-colors">Save Changes</button>
-              </div>
-              <div className="border-t border-zinc-800 mt-6 pt-6"><SetupGuide /></div>
-            </Card>
-            <button onClick={() => signOut(auth)} className="w-full py-4 text-red-400 text-sm font-bold hover:bg-red-950/30 rounded-2xl transition-colors flex items-center justify-center gap-2"><LogOut size={18}/> Sign Out</button>
-          </div>
-        )}
+          )}
+        </div>
       </main>
 
-      {/* --- NAVIGATION --- */}
-      <nav className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 p-2 rounded-full bg-black/20 backdrop-blur-2xl border border-white/10 shadow-2xl z-50">
+      {/* Floating Bottom Nav */}
+      <nav className="fixed bottom-5 left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-white/80 backdrop-blur-xl border border-white/20 shadow-2xl shadow-indigo-500/10 rounded-2xl p-2 z-50 flex justify-around items-center">
         {['add', 'history', 'visualize', 'ai-tools', 'chat', 'settings'].map(t => {
           const isActive = activeTab === t;
           return (
             <button 
               key={t} 
               onClick={() => setActiveTab(t)} 
-              className={`relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${isActive ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 scale-110' : 'text-zinc-400 hover:bg-white/5 hover:text-zinc-200'}`}
+              className={`relative flex flex-col items-center justify-center w-10 h-10 rounded-xl transition-all duration-300 ${isActive ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-300 -translate-y-2' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}`}
             >
-              {t==='add'?<PlusCircle size={22}/>:t==='history'?<History size={22}/>:t==='visualize'?<BarChart3 size={22}/>:t==='ai-tools'?<Sparkles size={22}/>:t==='chat'?<MessageSquare size={22}/>:<Settings size={22}/>}
+              {t==='add'?<PlusCircle size={20}/>:t==='history'?<History size={20}/>:t==='visualize'?<BarChart3 size={20}/>:t==='ai-tools'?<Sparkles size={20}/>:t==='chat'?<MessageSquare size={20}/>:<Settings size={20}/>}
+              {isActive && <span className="absolute -bottom-4 text-[8px] font-bold text-indigo-600 capitalize opacity-0 animate-in fade-in slide-in-from-top-1 duration-300 fill-mode-forwards delay-100" style={{ opacity: 1 }}>{t === 'ai-tools' ? 'AI Tools' : t}</span>}
             </button>
           );
         })}
