@@ -137,19 +137,19 @@ const Card = ({ children, className = "", onClick }) => (
 const CategoryBadge = ({ category, type }) => {
   if (type === 'income') {
     return (
-      <span className="text-[10px] font-bold px-3 py-1.5 rounded-full bg-emerald-900/30 text-emerald-300 border border-emerald-800/50 uppercase tracking-wider">
+      <span className="text-[10px] font-bold px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
         {category || 'Income'}
       </span>
     );
   }
   
   const colors = {
-    Food: 'bg-orange-900/30 text-orange-300 border-orange-800/50',
-    Transport: 'bg-blue-900/30 text-blue-300 border-blue-800/50',
-    Utilities: 'bg-yellow-900/30 text-yellow-300 border-yellow-800/50',
-    Entertainment: 'bg-purple-900/30 text-purple-300 border-purple-800/50',
-    Shopping: 'bg-pink-900/30 text-pink-300 border-pink-800/50',
-    Health: 'bg-teal-900/30 text-teal-300 border-teal-800/50',
+    Food: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+    Transport: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+    Utilities: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+    Entertainment: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+    Shopping: 'bg-pink-500/10 text-pink-400 border-pink-500/20',
+    Health: 'bg-teal-500/10 text-teal-400 border-teal-500/20',
     Other: 'bg-zinc-800 text-zinc-400 border-zinc-700',
   };
   const style = colors[category] || colors.Other;
@@ -358,6 +358,27 @@ export default function ExpenseTracker() {
     } catch (e) { setChatMessages(prev => [...prev, { role: 'ai', text: "Brain freeze... try again?" }]); } finally { setIsChatLoading(false); }
   };
 
+  const handlePurchaseAdvice = async () => {
+    if (!advisorInput.trim()) return;
+    setIsProcessingAI(true);
+    const expenseList = expenses.filter(e => e.type !== 'income');
+    const recent = expenseList.slice(0, 50).map(e => `${e.date}: $${e.amount} on ${e.category}`).join('\n');
+    const totalExpense = expenseList.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+    const totalIncome = expenses.filter(e => e.type === 'income').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+    const balance = totalIncome - totalExpense;
+
+    const prompt = `I want to buy: "${advisorInput}". My income $${totalIncome}, expenses $${totalExpense}, balance $${balance}. Expenses: ${recent}. Analyze if I can afford this. Give me a verdict JSON: { "verdict": "YES/NO/MAYBE", "reason": "Short witty explanation" }`;
+    try {
+      const text = await callGemini(prompt);
+      const res = parseGeminiJson(text);
+      setAdvisorResult(res);
+    } catch (err) {
+      showNotification("Advice failed: " + err.message, "error");
+    } finally {
+      setIsProcessingAI(false);
+    }
+  };
+
   // --- Data Management ---
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -419,10 +440,10 @@ export default function ExpenseTracker() {
 
   const getAIBoxColor = () => {
     switch(analysisType) {
-      case 'roast': return 'bg-gradient-to-r from-orange-500 to-red-600 border-orange-200';
-      case 'savings': return 'bg-gradient-to-r from-emerald-500 to-teal-600 border-emerald-200';
-      case 'forecast': return 'bg-gradient-to-r from-blue-500 to-indigo-600 border-blue-200';
-      default: return 'bg-gradient-to-r from-purple-500 to-indigo-600 border-purple-200';
+      case 'roast': return 'bg-gradient-to-r from-orange-500 to-red-600 border-orange-500/50';
+      case 'savings': return 'bg-gradient-to-r from-emerald-500 to-teal-600 border-emerald-500/50';
+      case 'forecast': return 'bg-gradient-to-r from-blue-500 to-indigo-600 border-blue-500/50';
+      default: return 'bg-gradient-to-r from-purple-500 to-indigo-600 border-purple-500/50';
     }
   };
 
@@ -434,7 +455,7 @@ export default function ExpenseTracker() {
         <div className="max-w-md mx-auto flex justify-between items-end">
           <div>
             <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Total Balance</p>
-            <h1 className={`text-4xl font-black tracking-tight ${balance < 0 ? 'text-red-400' : 'text-zinc-100'}`}>
+            <h1 className={`text-4xl font-black tracking-tight ${balance < 0 ? 'text-rose-400' : 'text-zinc-100'}`}>
               ${balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </h1>
           </div>
@@ -448,7 +469,7 @@ export default function ExpenseTracker() {
         
         {/* Notification Toast */}
         {notification && (
-          <div className={`fixed top-24 left-1/2 -translate-x-1/2 z-50 px-4 py-3 rounded-full shadow-2xl flex items-center gap-3 text-xs font-bold animate-in slide-in-from-top-5 fade-in duration-300 ${notification.type === 'error' ? 'bg-red-500/20 text-red-200 border border-red-500/50' : 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/50'}`}>
+          <div className={`fixed top-24 left-1/2 -translate-x-1/2 z-50 px-4 py-3 rounded-full shadow-2xl flex items-center gap-3 text-xs font-bold animate-in slide-in-from-top-5 fade-in duration-300 ${notification.type === 'error' ? 'bg-rose-500/20 text-rose-200 border border-rose-500/50' : 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/50'}`}>
             {notification.type === 'error' ? <AlertCircle size={14}/> : <CheckCircle size={14}/>} {notification.msg}
           </div>
         )}
@@ -459,32 +480,31 @@ export default function ExpenseTracker() {
             
             {/* Type Switcher */}
             <div className="bg-zinc-900 p-1.5 rounded-full flex relative border border-zinc-800">
-              <button onClick={() => setEntryType('expense')} className={`flex-1 py-3 rounded-full text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300 ${entryType === 'expense' ? 'bg-zinc-800 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}>
-                <ArrowUpRight size={16} className={entryType === 'expense' ? 'text-red-400' : ''}/> Expense
+              <button onClick={() => setEntryType('expense')} className={`flex-1 py-3 rounded-full text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300 ${entryType === 'expense' ? 'bg-zinc-800 text-white shadow-lg shadow-rose-900/20 border border-zinc-700' : 'text-zinc-500 hover:text-zinc-300'}`}>
+                <ArrowUpRight size={16} className={entryType === 'expense' ? 'text-rose-400' : ''}/> Expense
               </button>
-              <button onClick={() => setEntryType('income')} className={`flex-1 py-3 rounded-full text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300 ${entryType === 'income' ? 'bg-zinc-800 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}>
+              <button onClick={() => setEntryType('income')} className={`flex-1 py-3 rounded-full text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300 ${entryType === 'income' ? 'bg-zinc-800 text-white shadow-lg shadow-emerald-900/20 border border-zinc-700' : 'text-zinc-500 hover:text-zinc-300'}`}>
                 <ArrowDownLeft size={16} className={entryType === 'income' ? 'text-emerald-400' : ''}/> Income
               </button>
             </div>
 
             {/* Main Input Card */}
-            <Card className="relative overflow-hidden border-zinc-800/60">
-              {/* Smart Input Toggle */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-50"></div>
+            <Card className="relative overflow-hidden border-zinc-800">
+              <div className={`absolute top-0 left-0 right-0 h-1 opacity-60 ${entryType === 'expense' ? 'bg-gradient-to-r from-rose-500 via-orange-500 to-rose-500' : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-500'}`}></div>
               
               {!showSmartAdd ? (
-                <button onClick={() => setShowSmartAdd(true)} className="w-full mb-6 group relative overflow-hidden rounded-2xl bg-zinc-800/50 p-4 transition-all hover:bg-zinc-800 border border-zinc-700/50">
+                <button onClick={() => setShowSmartAdd(true)} className="w-full mb-6 group relative overflow-hidden rounded-2xl bg-zinc-800/50 p-4 transition-all hover:bg-zinc-800 border border-zinc-700/50 hover:border-indigo-500/30">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2 rounded-xl text-white shadow-lg group-hover:scale-110 transition-transform">
-                        <Wand2 size={18} />
+                      <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2.5 rounded-xl text-white shadow-lg shadow-indigo-900/20 group-hover:scale-110 transition-transform">
+                        <Wand2 size={20} />
                       </div>
                       <div className="text-left">
-                        <p className="text-sm font-bold text-zinc-200">Magic Add</p>
+                        <p className="text-sm font-bold text-zinc-100 group-hover:text-indigo-300 transition-colors">Magic Add</p>
                         <p className="text-[10px] text-zinc-500">"Coffee $5" or upload receipt</p>
                       </div>
                     </div>
-                    <ChevronRight size={16} className="text-zinc-600 group-hover:text-zinc-400" />
+                    <ChevronRight size={16} className="text-zinc-600 group-hover:text-indigo-400 transition-colors" />
                   </div>
                 </button>
               ) : (
@@ -509,7 +529,7 @@ export default function ExpenseTracker() {
                   <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Amount</label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl text-zinc-500">$</span>
-                    <input type="number" step="0.01" required value={amount} onChange={e => setAmount(e.target.value)} className="w-full bg-zinc-950/50 text-3xl font-black text-white pl-10 pr-4 py-4 rounded-2xl border-2 border-zinc-800 focus:border-indigo-500/50 focus:bg-zinc-900 outline-none transition-all placeholder-zinc-800" placeholder="0.00" />
+                    <input type="number" step="0.01" required value={amount} onChange={e => setAmount(e.target.value)} className="w-full bg-zinc-950/50 text-3xl font-black text-white pl-10 pr-4 py-4 rounded-2xl border-2 border-zinc-800 focus:border-zinc-600 outline-none transition-all placeholder-zinc-800" placeholder="0.00" />
                   </div>
                 </div>
 
@@ -529,7 +549,7 @@ export default function ExpenseTracker() {
                   </div>
                 </div>
 
-                <button type="submit" disabled={isSubmitting} className={`w-full py-4 rounded-2xl font-bold text-white shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 ${entryType === 'income' ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/20' : 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-900/20'}`}>
+                <button type="submit" disabled={isSubmitting} className={`w-full py-4 rounded-2xl font-bold text-white shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 ${entryType === 'income' ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/20' : 'bg-rose-600 hover:bg-rose-500 shadow-rose-900/20'}`}>
                   {isSubmitting ? <Loader2 className="animate-spin" /> : <><CheckCircle size={20} /> Confirm Transaction</>}
                 </button>
               </form>
@@ -540,7 +560,7 @@ export default function ExpenseTracker() {
         {/* --- TAB: HISTORY --- */}
         {activeTab === 'history' && (
           <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-500">
-            <div className="bg-zinc-900 p-2 rounded-2xl border border-zinc-800 flex items-center gap-3 sticky top-24 z-20">
+            <div className="bg-zinc-900 p-2 rounded-2xl border border-zinc-800 flex items-center gap-3 sticky top-24 z-20 backdrop-blur-lg bg-zinc-900/90">
               <div className="bg-zinc-800 p-2 rounded-xl text-zinc-400"><Calendar size={18}/></div>
               <input type="date" value={searchDate} onChange={(e) => setSearchDate(e.target.value)} className="bg-transparent text-zinc-200 text-sm font-bold outline-none flex-1" />
               {searchDate && <button onClick={() => setSearchDate('')} className="p-2 text-zinc-500 hover:text-white"><X size={18}/></button>}
@@ -548,7 +568,7 @@ export default function ExpenseTracker() {
 
             <div className="space-y-2">
               {filteredExpenses.map((exp, i) => (
-                <Card key={exp.id} className="p-4 flex justify-between items-center group border-l-4" style={{ borderLeftColor: exp.type === 'income' ? '#10b981' : '#f43f5e', animationDelay: `${i * 30}ms` }}>
+                <Card key={exp.id} className={`p-4 flex justify-between items-center group border-l-4 ${exp.type === 'income' ? 'hover:border-emerald-500/30' : 'hover:border-rose-500/30'}`} style={{ borderLeftColor: exp.type === 'income' ? '#10b981' : '#f43f5e', animationDelay: `${i * 30}ms` }}>
                   <div className="flex gap-4 items-center">
                     <div className={`p-3 rounded-2xl ${exp.type === 'income' ? 'bg-emerald-900/20 text-emerald-400' : 'bg-rose-900/20 text-rose-400'}`}>
                       {exp.type === 'income' ? <ArrowDownLeft size={20}/> : <ShoppingBag size={20}/>}
@@ -579,11 +599,11 @@ export default function ExpenseTracker() {
           <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
             {/* Balance Summary */}
             <div className="grid grid-cols-2 gap-3">
-              <Card className="p-4 bg-emerald-900/10 border-emerald-900/30">
+              <Card className="p-5 bg-gradient-to-br from-emerald-900/30 to-zinc-900 border-emerald-500/20">
                 <div className="text-emerald-500 text-xs font-bold uppercase mb-1 flex items-center gap-1"><ArrowDownLeft size={12}/> Income</div>
                 <div className="text-2xl font-black text-emerald-400">${totalIncome.toFixed(0)}</div>
               </Card>
-              <Card className="p-4 bg-rose-900/10 border-rose-900/30">
+              <Card className="p-5 bg-gradient-to-br from-rose-900/30 to-zinc-900 border-rose-500/20">
                 <div className="text-rose-500 text-xs font-bold uppercase mb-1 flex items-center gap-1"><ArrowUpRight size={12}/> Expenses</div>
                 <div className="text-2xl font-black text-rose-400">${totalExpenses.toFixed(0)}</div>
               </Card>
@@ -592,31 +612,32 @@ export default function ExpenseTracker() {
             {/* Chart Controls */}
             <div className="flex bg-zinc-900 p-1 rounded-xl border border-zinc-800">
               {[7, 30].map(p => (
-                <button key={p} onClick={() => setChartPeriod(p)} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${chartPeriod === p ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
+                <button key={p} onClick={() => setChartPeriod(p)} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${chartPeriod === p ? 'bg-zinc-800 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-300'}`}>
                   Last {p} Days
                 </button>
               ))}
             </div>
 
-            {/* Month Survival Stats (RESTORED OLD LAYOUT) */}
-            <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 text-white border-none shadow-xl relative overflow-hidden group">
-              <div className="absolute -right-10 -top-10 w-40 h-40 bg-indigo-500 rounded-full opacity-20 blur-3xl group-hover:opacity-30 transition-opacity duration-500"></div>
-              <h2 className="font-bold text-lg mb-6 flex items-center gap-2 text-white/90 relative z-10"><Calendar size={20} className="text-indigo-400"/> Month Survival</h2>
+            {/* Month Survival Stats */}
+            <Card className="p-6 border-blue-500/20 bg-gradient-to-br from-zinc-900 to-blue-900/20 relative overflow-hidden">
+               <div className="absolute -right-6 -top-6 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl"></div>
+              <h2 className="font-bold text-lg mb-6 flex items-center gap-2 text-blue-200 relative z-10"><Calendar size={18}/> Month Survival</h2>
               <div className="grid grid-cols-2 gap-6 relative z-10">
                 <div>
-                  <div className="flex items-center gap-2 mb-2 text-slate-400 text-[10px] font-bold uppercase tracking-wider"><Clock size={12} /> Total Days</div>
-                  <div className="flex items-baseline gap-1"><span className="text-3xl font-bold text-white">{monthStats.daysLeft}</span><span className="text-xs text-slate-400 font-medium">/ {monthStats.daysInMonth} left</span></div>
-                  <div className="w-full bg-slate-700/50 h-2 rounded-full mt-3 overflow-hidden backdrop-blur-sm"><div className="bg-gradient-to-r from-indigo-500 to-purple-500 h-full rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)]" style={{ width: `${(monthStats.daysLeft / monthStats.daysInMonth) * 100}%` }}></div></div>
+                  <div className="flex items-center gap-2 mb-2 text-zinc-400 text-[10px] font-bold uppercase tracking-wider"><Clock size={12} /> Total Days</div>
+                  <div className="flex items-baseline gap-1"><span className="text-3xl font-bold text-white">{monthStats.daysLeft}</span><span className="text-xs text-zinc-500 font-medium">/ {monthStats.daysInMonth} left</span></div>
+                  <div className="w-full bg-zinc-800/50 h-1.5 rounded-full mt-3 overflow-hidden"><div className="bg-blue-500 h-full rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]" style={{ width: `${(monthStats.daysLeft / monthStats.daysInMonth) * 100}%` }}></div></div>
                 </div>
                 <div>
-                  <div className="flex items-center gap-2 mb-2 text-slate-400 text-[10px] font-bold uppercase tracking-wider"><Briefcase size={12} /> Working Days</div>
-                  <div className="flex items-baseline gap-1"><span className="text-3xl font-bold text-emerald-400">{monthStats.workingDaysLeft}</span><span className="text-xs text-slate-400 font-medium">/ {monthStats.totalWorkingDays} left</span></div>
-                  <div className="w-full bg-slate-700/50 h-2 rounded-full mt-3 overflow-hidden backdrop-blur-sm"><div className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]" style={{ width: `${(monthStats.workingDaysLeft / monthStats.totalWorkingDays) * 100}%` }}></div></div>
+                  <div className="flex items-center gap-2 mb-2 text-zinc-400 text-[10px] font-bold uppercase tracking-wider"><Briefcase size={12} /> Working Days</div>
+                  <div className="flex items-baseline gap-1"><span className="text-3xl font-bold text-emerald-400">{monthStats.workingDaysLeft}</span><span className="text-xs text-zinc-500 font-medium">/ {monthStats.totalWorkingDays} left</span></div>
+                  <div className="w-full bg-zinc-800/50 h-1.5 rounded-full mt-3 overflow-hidden"><div className="bg-emerald-500 h-full rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]" style={{ width: `${(monthStats.workingDaysLeft / monthStats.totalWorkingDays) * 100}%` }}></div></div>
                 </div>
               </div>
-              <p className="text-xs text-slate-400 mt-6 text-center relative z-10 bg-slate-800/50 p-2 rounded-lg backdrop-blur-sm border border-white/5">
-                Budget for remaining days: <strong className="text-white">${(balance / Math.max(1, monthStats.daysLeft)).toFixed(0)}</strong> / day
-              </p>
+              <div className="mt-6 pt-4 border-t border-white/5 text-center">
+                 <p className="text-xs text-zinc-400">Daily budget for remaining days</p>
+                 <p className="text-xl font-black text-white mt-1">${(balance / Math.max(1, monthStats.daysLeft)).toFixed(0)}</p>
+              </div>
             </Card>
 
             {/* Charts */}
@@ -625,8 +646,8 @@ export default function ExpenseTracker() {
               <div className="h-40 flex items-end justify-between gap-1">
                 {chartData.map((d, i) => (
                   <div key={i} className="flex-1 flex flex-col items-center group relative cursor-pointer" onClick={() => setFocusedBar(d.date)}>
-                    <div className="w-full bg-zinc-800 rounded-t-md relative overflow-hidden" style={{height: '100%'}}>
-                      <div className={`absolute bottom-0 left-0 right-0 transition-all duration-500 ${focusedBar === d.date ? 'bg-indigo-400' : 'bg-indigo-600/60 group-hover:bg-indigo-500'}`} style={{ height: `${Math.max(d.percent, 2)}%` }}></div>
+                    <div className="w-full bg-zinc-800/50 rounded-t-md relative overflow-hidden" style={{height: '100%'}}>
+                      <div className={`absolute bottom-0 left-0 right-0 transition-all duration-500 ${focusedBar === d.date ? 'bg-indigo-400 shadow-[0_0_15px_rgba(129,140,248,0.5)]' : 'bg-indigo-600/80 group-hover:bg-indigo-500'}`} style={{ height: `${Math.max(d.percent, 2)}%` }}></div>
                     </div>
                     {(i % (chartPeriod === 30 ? 5 : 1) === 0) && <span className="text-[9px] text-zinc-600 mt-2 font-mono">{d.day}</span>}
                     {focusedBar === d.date && <div className="absolute bottom-full mb-2 bg-zinc-800 text-white text-[10px] px-2 py-1 rounded border border-zinc-700">${d.amount}</div>}
@@ -640,11 +661,11 @@ export default function ExpenseTracker() {
               <div className="space-y-3">
                 {categoryData.map((cat, i) => (
                   <div key={i} className="group cursor-pointer" onClick={() => setFocusedCategory(cat.name === focusedCategory ? null : cat.name)}>
-                    <div className="flex justify-between text-xs mb-1.5">
+                    <div className="flex justify-between text-xs mb-2">
                       <span className={`font-bold ${focusedCategory === cat.name ? 'text-white' : 'text-zinc-400'}`}>{cat.name}</span>
                       <span className="text-zinc-500 font-mono">${cat.value.toFixed(0)} ({Math.round(cat.percent)}%)</span>
                     </div>
-                    <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
+                    <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
                       <div className={`h-full rounded-full transition-all duration-500 ${['bg-purple-500', 'bg-blue-500', 'bg-emerald-500', 'bg-orange-500'][i % 4]}`} style={{ width: `${cat.percent}%` }}></div>
                     </div>
                   </div>
@@ -658,29 +679,30 @@ export default function ExpenseTracker() {
         {activeTab === 'ai-tools' && (
           <div className="space-y-6 animate-in slide-in-from-right duration-300">
             
-            {/* AI Assistant Card (RESTORED) */}
-            <Card className="p-6 bg-gradient-to-br from-white/5 to-purple-900/20 border-purple-500/20">
-               <h2 className="font-bold text-lg mb-6 flex items-center gap-2 text-purple-300">
+            {/* AI Assistant Card (Restored & Styled) */}
+            <Card className="p-6 bg-gradient-to-br from-purple-900/20 to-zinc-900 border-purple-500/30 relative overflow-hidden">
+               <div className="absolute -right-10 -top-10 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl"></div>
+               <h2 className="font-bold text-lg mb-6 flex items-center gap-2 text-purple-300 relative z-10">
                  <Bot size={20} /> AI Assistant
                </h2>
-               <div className="grid grid-cols-2 gap-3">
-                  <button onClick={() => handleAIAction('analyze')} disabled={isProcessingAI} className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 py-3 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all">
+               <div className="grid grid-cols-2 gap-3 relative z-10">
+                  <button onClick={() => handleAIAction('analyze')} disabled={isProcessingAI} className="bg-zinc-800/80 hover:bg-zinc-700 border border-zinc-700/50 text-zinc-200 py-4 px-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all hover:scale-[1.02]">
                      <Brain size={16} className="text-purple-400"/> Analyze
                   </button>
-                  <button onClick={() => handleAIAction('roast')} disabled={isProcessingAI} className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 py-3 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all">
+                  <button onClick={() => handleAIAction('roast')} disabled={isProcessingAI} className="bg-zinc-800/80 hover:bg-zinc-700 border border-zinc-700/50 text-zinc-200 py-4 px-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all hover:scale-[1.02]">
                      <Flame size={16} className="text-orange-400"/> Roast Me
                   </button>
-                  <button onClick={() => handleAIAction('advice')} disabled={isProcessingAI} className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 py-3 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all">
+                  <button onClick={() => handleAIAction('advice')} disabled={isProcessingAI} className="bg-zinc-800/80 hover:bg-zinc-700 border border-zinc-700/50 text-zinc-200 py-4 px-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all hover:scale-[1.02]">
                      <PiggyBank size={16} className="text-emerald-400"/> Savings Tips
                   </button>
-                  <button onClick={() => handleAIAction('opportunity')} disabled={isProcessingAI} className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 py-3 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all">
+                  <button onClick={() => handleAIAction('opportunity')} disabled={isProcessingAI} className="bg-zinc-800/80 hover:bg-zinc-700 border border-zinc-700/50 text-zinc-200 py-4 px-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all hover:scale-[1.02]">
                      <TrendingUp size={16} className="text-blue-400"/> Forecast
                   </button>
                </div>
-               {isProcessingAI && <div className="flex justify-center py-4"><Loader2 className="animate-spin text-purple-400" size={24}/></div>}
+               {isProcessingAI && <div className="flex justify-center py-6"><Loader2 className="animate-spin text-purple-400" size={24}/></div>}
                {analysisResult && (
-                  <div className={`mt-4 p-4 rounded-2xl border ${getAIBoxColor()} animate-in zoom-in`}>
-                     <div className="flex justify-between items-start mb-2">
+                  <div className={`mt-6 p-5 rounded-2xl border ${getAIBoxColor()} animate-in zoom-in relative z-10 bg-zinc-900/90`}>
+                     <div className="flex justify-between items-start mb-3">
                         <h4 className="font-bold text-sm capitalize text-white flex items-center gap-2">
                            <Sparkles size={14}/> {analysisType} Result
                         </h4>
@@ -692,7 +714,7 @@ export default function ExpenseTracker() {
             </Card>
 
             {/* Persona Card */}
-            <Card className="bg-gradient-to-br from-indigo-900/20 to-purple-900/20 border-indigo-500/20 p-6 text-center">
+            <Card className="bg-gradient-to-br from-indigo-900/20 to-zinc-900 border-indigo-500/30 p-6 text-center">
               {personaResult ? (
                 <div className="animate-in zoom-in">
                   <div className="text-5xl mb-3">🧙‍♂️</div>
@@ -711,24 +733,26 @@ export default function ExpenseTracker() {
             <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest px-2">Deep Dive Tools</h3>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { id: 'report', icon: GraduationCap, color: 'text-blue-400', label: 'Report Card', prompt: "Grade my finances A-F based on spending. Return JSON: {grade, score, comment}." },
-                { id: 'tax', icon: FileText, color: 'text-emerald-400', label: 'Tax Scout', prompt: "Find potential tax deductions in my expenses. Return JSON: [{item, amount, reason}]." },
-                { id: 'subscriptions', icon: Repeat, color: 'text-purple-400', label: 'Sub Detective', prompt: "Find recurring subscriptions. Return JSON: [{name, amount, frequency}]." },
-                { id: 'opportunity', icon: Gift, color: 'text-pink-400', label: 'Opp. Cost', prompt: "What cool thing could I buy if I cut my top expense category by 50%? Return JSON: {item, price, message}." },
+                { id: 'report', icon: GraduationCap, color: 'text-blue-400', bg: 'bg-blue-900/10', border: 'border-blue-500/20', label: 'Report Card', prompt: "Grade my finances A-F based on spending. Return JSON: {grade, score, comment}." },
+                { id: 'tax', icon: FileText, color: 'text-emerald-400', bg: 'bg-emerald-900/10', border: 'border-emerald-500/20', label: 'Tax Scout', prompt: "Find potential tax deductions in my expenses. Return JSON: [{item, amount, reason}]." },
+                { id: 'subscriptions', icon: Repeat, color: 'text-purple-400', bg: 'bg-purple-900/10', border: 'border-purple-500/20', label: 'Sub Detective', prompt: "Find recurring subscriptions. Return JSON: [{name, amount, frequency}]." },
+                { id: 'opportunity', icon: Gift, color: 'text-pink-400', bg: 'bg-pink-900/10', border: 'border-pink-500/20', label: 'Opp. Cost', prompt: "What cool thing could I buy if I cut my top expense category by 50%? Return JSON: {item, price, message}." },
               ].map(tool => (
-                <Card key={tool.id} className="p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-zinc-600" onClick={() => handleAIAction(tool.id, tool.prompt)}>
-                  <tool.icon size={24} className={tool.color} />
+                <div key={tool.id} className={`p-4 rounded-[24px] flex flex-col items-center justify-center gap-3 cursor-pointer transition-all hover:scale-[1.02] border ${tool.bg} ${tool.border}`} onClick={() => handleAIAction(tool.id, tool.prompt)}>
+                  <div className={`p-3 rounded-2xl bg-zinc-900 shadow-sm`}>
+                    <tool.icon size={20} className={tool.color} />
+                  </div>
                   <span className="text-xs font-bold text-zinc-300">{tool.label}</span>
-                </Card>
+                </div>
               ))}
             </div>
 
             {/* Purchase Advisor */}
-            <Card className="p-6">
+            <Card className="p-6 border-pink-500/20">
               <h2 className="font-bold text-zinc-200 mb-4 flex items-center gap-2"><ShoppingBag size={18} className="text-pink-400"/> Can I Afford This?</h2>
               <div className="flex gap-2">
                 <input value={advisorInput} onChange={e => setAdvisorInput(e.target.value)} placeholder="e.g. PS5 $500" className="flex-1 bg-zinc-950 text-sm px-4 py-3 rounded-xl border border-zinc-700 focus:border-pink-500 outline-none" />
-                <button onClick={() => handleAIAction('advice', `Can I afford "${advisorInput}"? My balance is $${balance}. Return JSON: {verdict: "YES/NO/MAYBE", reason}.`)} className="bg-pink-600 text-white px-4 rounded-xl font-bold text-xs">Ask</button>
+                <button onClick={() => handleAIAction('advice', `Can I afford "${advisorInput}"? My balance is $${balance}. Return JSON: {verdict: "YES/NO/MAYBE", reason}.`)} className="bg-pink-600 text-white px-4 rounded-xl font-bold text-xs shadow-lg shadow-pink-900/20">Ask</button>
               </div>
               {advisorResult && (
                 <div className={`mt-4 p-4 rounded-xl border ${advisorResult.verdict === 'YES' ? 'bg-emerald-900/20 border-emerald-800 text-emerald-300' : 'bg-rose-900/20 border-rose-800 text-rose-300'}`}>
@@ -740,8 +764,8 @@ export default function ExpenseTracker() {
 
             {/* Dynamic AI Result Display Area */}
             {(reportCard || taxDeductions || subscriptions || opportunityResult) && (
-              <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4 animate-in fade-in duration-200">
-                <div className="bg-zinc-900 w-full max-w-sm rounded-3xl border border-zinc-700 p-6 shadow-2xl animate-in slide-in-from-bottom-10">
+              <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-4 animate-in fade-in duration-200">
+                <div className="bg-zinc-900 w-full max-w-sm rounded-[32px] border border-zinc-700 p-6 shadow-2xl animate-in slide-in-from-bottom-10">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="font-bold text-xl text-white flex items-center gap-2"><Bot size={24} className="text-indigo-400"/> AI Insight</h3>
                     <button onClick={() => { setReportCard(null); setTaxDeductions(null); setSubscriptions(null); setOpportunityResult(null); }} className="bg-zinc-800 p-2 rounded-full text-zinc-400 hover:text-white"><X size={18}/></button>
@@ -749,25 +773,27 @@ export default function ExpenseTracker() {
                   
                   <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                     {reportCard && (
-                      <div className="text-center">
-                        <div className="text-6xl font-black text-indigo-400 mb-2">{reportCard.grade}</div>
-                        <div className="text-sm text-zinc-400 italic">"{reportCard.comment}"</div>
+                      <div className="text-center py-4">
+                        <div className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 mb-2">{reportCard.grade}</div>
+                        <div className="text-sm text-zinc-400 italic px-4">"{reportCard.comment}"</div>
                       </div>
                     )}
                     {opportunityResult && (
-                      <div className="text-center">
-                        <p className="text-zinc-400 text-xs mb-2">Instead of your usual spending, you could own:</p>
-                        <div className="text-2xl font-bold text-teal-300 mb-1">{opportunityResult.item}</div>
-                        <div className="text-sm text-teal-500/60">{opportunityResult.price}</div>
-                        <p className="mt-4 text-xs text-zinc-500">"{opportunityResult.message}"</p>
+                      <div className="text-center py-4">
+                        <p className="text-zinc-400 text-xs mb-3 uppercase tracking-widest">You could have bought</p>
+                        <div className="text-3xl font-black text-teal-300 mb-1 leading-tight">{opportunityResult.item}</div>
+                        <div className="text-sm font-bold text-teal-500/80 mb-4">{opportunityResult.price}</div>
+                        <div className="bg-teal-900/30 p-3 rounded-xl border border-teal-500/20">
+                           <p className="text-xs text-teal-200 italic">"{opportunityResult.message}"</p>
+                        </div>
                       </div>
                     )}
                     {subscriptions && (
                       <div className="space-y-2">
                         {subscriptions.length ? subscriptions.map((s, i) => (
-                          <div key={i} className="flex justify-between p-3 bg-zinc-800 rounded-xl">
+                          <div key={i} className="flex justify-between p-4 bg-zinc-800 rounded-2xl">
                             <span className="font-bold text-zinc-200">{s.name}</span>
-                            <span className="text-purple-400 font-mono">${s.amount}/{s.frequency?.[0]}</span>
+                            <span className="text-purple-400 font-mono font-bold">${s.amount}<span className="text-zinc-600 text-xs font-normal">/{s.frequency?.[0]}</span></span>
                           </div>
                         )) : <p className="text-center text-zinc-500">No subscriptions found.</p>}
                       </div>
@@ -775,10 +801,10 @@ export default function ExpenseTracker() {
                     {taxDeductions && (
                       <div className="space-y-2">
                         {taxDeductions.length ? taxDeductions.map((t, i) => (
-                          <div key={i} className="p-3 bg-zinc-800 rounded-xl">
+                          <div key={i} className="p-4 bg-zinc-800 rounded-2xl">
                             <div className="flex justify-between mb-1">
                               <span className="font-bold text-zinc-200">{t.item}</span>
-                              <span className="text-emerald-400 font-mono">${t.amount}</span>
+                              <span className="text-emerald-400 font-mono font-bold">${t.amount}</span>
                             </div>
                             <p className="text-[10px] text-zinc-500">{t.reason}</p>
                           </div>
@@ -798,7 +824,7 @@ export default function ExpenseTracker() {
             <div className="flex-1 overflow-y-auto space-y-4 p-1">
               {chatMessages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2`}>
-                  <div className={`max-w-[85%] p-4 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-zinc-800 text-zinc-300 rounded-bl-none'}`}>
+                  <div className={`max-w-[85%] p-4 rounded-2xl text-sm shadow-sm ${msg.role === 'user' ? 'bg-indigo-600 text-white rounded-br-sm' : 'bg-zinc-800 text-zinc-300 rounded-bl-sm'}`}>
                     {msg.text}
                   </div>
                 </div>
